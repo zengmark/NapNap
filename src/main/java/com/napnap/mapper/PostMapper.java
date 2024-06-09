@@ -10,7 +10,6 @@ import com.napnap.entity.Post;
 * @Entity com.napnap.entity.Post
 */
 public interface PostMapper extends BaseMapper<Post> {
-
 }
 
 

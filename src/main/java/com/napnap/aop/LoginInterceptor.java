@@ -1,8 +1,8 @@
 package com.napnap.aop;
 
+import com.napnap.annotation.LoginCheck;
 import com.napnap.common.ErrorCode;
-import com.napnap.common.LoginCheck;
-import com.napnap.common.UserConstant;
+import com.napnap.constant.UserConstant;
 import com.napnap.entity.User;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.UserService;

@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.common.ErrorCode;
-import com.napnap.common.UserConstant;
+import com.napnap.constant.UserConstant;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
 import com.napnap.dto.user.UserUpdateRequest;
@@ -125,30 +125,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
-     * 用户粉丝数量 + 1
+     * 用户粉丝数量 + num（num 可能为整数，可能为复数）
+     *
      * @param userId
+     * @param num
      */
     @Override
-    public void addUserFans(long userId) {
+    public void changeUserFans(long userId, long num) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
         }
-        user.setFansNum(user.getFansNum() + 1);
+        user.setFansNum(user.getFansNum() + num);
         userMapper.updateById(user);
     }
 
     /**
-     * 用户关注数量 + 1
+     * 用户关注数量 + num（num 可能为整数，可能为负数）
+     *
      * @param userId
+     * @param num
      */
     @Override
-    public void addUserFocus(long userId) {
+    public void changeUserFocus(long userId, long num) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
         }
-        user.setFocusNum(user.getFocusNum() + 1);
+        user.setFocusNum(user.getFocusNum() + num);
         userMapper.updateById(user);
     }
 

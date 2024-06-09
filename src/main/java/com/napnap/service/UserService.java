@@ -20,7 +20,7 @@ public interface UserService extends IService<User> {
 
     UserVO updateUserInfo(UserUpdateRequest userUpdateRequest);
 
-    void addUserFans(long userId);
+    void changeUserFans(long userId, long num);
 
-    void addUserFocus(long userId);
+    void changeUserFocus(long userId, long num);
 }

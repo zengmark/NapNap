@@ -1,4 +1,4 @@
-package com.napnap.common;
+package com.napnap.constant;
 
 /**
  * 用户常量
