@@ -1,7 +1,7 @@
 package com.napnap.service;
 
-import com.napnap.entity.Message;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.napnap.entity.Message;
 
 /**
 * @author 13123

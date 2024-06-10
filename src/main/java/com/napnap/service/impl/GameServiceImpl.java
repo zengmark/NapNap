@@ -5,17 +5,25 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.napnap.common.PageRequest;
+import com.napnap.constant.CollectConstant;
 import com.napnap.constant.SortConstant;
+import com.napnap.constant.UserConstant;
+import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.game.GameSearchRequest;
+import com.napnap.entity.Collect;
 import com.napnap.entity.Game;
-import com.napnap.entity.Post;
 import com.napnap.mapper.GameMapper;
+import com.napnap.service.CollectService;
 import com.napnap.service.GameService;
 import com.napnap.vo.GameVO;
+import com.napnap.vo.UserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,8 +37,19 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
     implements GameService{
 
     @Resource
+    private HttpServletRequest request;
+
+    @Resource
     private GameMapper gameMapper;
 
+    @Resource
+    private CollectService collectService;
+
+    /**
+     * 根据搜索条件列举所有游戏
+     * @param gameSearchRequest
+     * @return
+     */
     @Override
     public Page<GameVO> listAllGameBySearch(GameSearchRequest gameSearchRequest) {
         String searchText = gameSearchRequest.getSearchText();
@@ -57,11 +76,60 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         }
         queryWrapper.orderByDesc(Game::getCreateTime);
         Page<Game> gamePage = gameMapper.selectPage(new Page<>(gameSearchRequest.getCurrent(), gameSearchRequest.getPageSize()), queryWrapper);
-        List<GameVO> gameVoList = gamePage.getRecords().stream().map(this::getPageVO).collect(Collectors.toList());
+        List<GameVO> gameVoList = gamePage.getRecords().stream().map(this::getGameVO).collect(Collectors.toList());
         return new Page<GameVO>(gamePage.getCurrent(), gamePage.getSize(), gamePage.getTotal()).setRecords(gameVoList);
     }
 
-    private GameVO getPageVO(Game game){
+    /**
+     * 获取用户收藏的所有游戏
+     * @param pageRequest
+     * @return
+     */
+    @Override
+    public Page<GameVO> listAllGameByUserCollect(PageRequest pageRequest) {
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        // 获取收藏表中用户收集的游戏的IDList
+        LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
+        collectQueryWrapper.eq(Collect::getUid, userId);
+        collectQueryWrapper.eq(Collect::getType, CollectConstant.GAME);
+        List<Collect> collectList = collectService.list(collectQueryWrapper);
+        List<Long> gameIdList = collectList.stream().map(Collect::getCollectedId).collect(Collectors.toList());
+        // 根据 gameIdList 集合获取所有游戏
+        LambdaQueryWrapper<Game> gameQueryWrapper = new LambdaQueryWrapper<>();
+        gameQueryWrapper.in(Game::getId, gameIdList);
+        Page<Game> gamePage = gameMapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), gameQueryWrapper);
+        List<Game> gameList = gamePage.getRecords();
+        List<GameVO> gameVoList = gameList.stream().map(this::getGameVO).collect(Collectors.toList());
+        return new Page<GameVO>(gamePage.getCurrent(), gamePage.getSize(), gamePage.getTotal()).setRecords(gameVoList);
+    }
+
+    /**
+     * 收藏/取消收藏游戏
+     * @param collectRequest
+     * @return
+     */
+    @Transactional
+    @Override
+    public GameVO collectGame(CollectRequest collectRequest) {
+        // collectId 就是 tb_game 表的主键ID
+        Long gameId = collectRequest.getCollectId();
+        Integer type = collectRequest.getType();
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        // 收藏/取消收藏记录
+        boolean isCollect = collectService.changeCollectStatus(userId, gameId, type);
+        Game game = gameMapper.selectById(gameId);
+        if(isCollect){
+            game.setCollectNum(game.getCollectNum() + 1);
+        } else {
+            game.setCollectNum(game.getCollectNum() - 1);
+        }
+        gameMapper.updateById(game);
+        return getGameVO(game);
+    }
+
+    private GameVO getGameVO(Game game){
         GameVO gameVO = new GameVO();
         BeanUtil.copyProperties(game, gameVO);
         gameVO.setGameIcon(game.getGameIconList());
@@ -69,7 +137,3 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         return gameVO;
     }
 }
-
-
-
-

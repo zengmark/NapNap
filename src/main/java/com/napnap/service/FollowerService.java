@@ -1,7 +1,7 @@
 package com.napnap.service;
 
-import com.napnap.entity.Follower;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.napnap.entity.Follower;
 
 /**
 * @author 13123

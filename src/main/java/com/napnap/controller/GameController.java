@@ -1,9 +1,12 @@
 package com.napnap.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.napnap.annotation.LoginCheck;
 import com.napnap.common.BaseResponse;
 import com.napnap.common.ErrorCode;
+import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
+import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.game.GameSearchRequest;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.GameService;
@@ -16,7 +19,7 @@ import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/game")
-@Api("游戏管理")
+@Api(tags = "游戏管理")
 public class GameController {
 
     @Resource
@@ -37,4 +40,27 @@ public class GameController {
         Page<GameVO> gameVOPage = gameService.listAllGameBySearch(gameSearchRequest);
         return ResultUtils.success(gameVOPage);
     }
+
+    @ApiOperation("获取用户收藏的游戏列表")
+    @LoginCheck
+    @PostMapping("/listAllGameByUserCollect")
+    public BaseResponse<Page<GameVO>> listAllGameByUserCollect(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<GameVO> gameVOPage = gameService.listAllGameByUserCollect(pageRequest);
+        return ResultUtils.success(gameVOPage);
+    }
+
+    @ApiOperation("收藏/取消收藏游戏")
+    @LoginCheck
+    @PostMapping("/collectGame")
+    public BaseResponse<GameVO> collectGame(@RequestBody CollectRequest collectRequest){
+        if(collectRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        GameVO gameVO = gameService.collectGame(collectRequest);
+        return ResultUtils.success(gameVO);
+    }
+
 }

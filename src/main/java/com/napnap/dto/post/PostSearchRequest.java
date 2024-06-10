@@ -18,4 +18,6 @@ public class PostSearchRequest extends PageRequest implements Serializable {
      * 标签列表
      */
     private List<String> tagList;
+
+    private static final long serialVersionUID = 1L;
 }

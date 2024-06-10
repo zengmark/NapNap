@@ -2,12 +2,9 @@ package com.napnap.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.napnap.common.ErrorCode;
-import com.napnap.constant.CollectConstant;
 import com.napnap.entity.Collect;
-import com.napnap.exception.BusinessException;
-import com.napnap.service.CollectService;
 import com.napnap.mapper.CollectMapper;
+import com.napnap.service.CollectService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,7 +20,6 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
 
     @Resource
     private CollectMapper collectMapper;
-
 
     /**
      * 一条收藏记录，返回值为 true 代表是收藏，返回值为 false 代表是取消收藏
@@ -60,6 +56,23 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
         collectMapper.insert(collect);
         return true;
     }
+
+    /**
+     * 根据 collectId 和 type 将所有记录删除
+     * @param collectId
+     * @param type
+     * @return
+     */
+    @Override
+    public boolean deleteAllCollectRecord(long collectId, int type) {
+        LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Collect::getCollectedId, collectId);
+        queryWrapper.eq(Collect::getType, type);
+        collectMapper.delete(queryWrapper);
+        return true;
+    }
+
+
 }
 
 

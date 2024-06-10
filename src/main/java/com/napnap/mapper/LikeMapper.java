@@ -1,7 +1,7 @@
 package com.napnap.mapper;
 
-import com.napnap.entity.Like;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.napnap.entity.Like;
 
 /**
 * @author 13123

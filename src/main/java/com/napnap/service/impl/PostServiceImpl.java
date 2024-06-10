@@ -11,13 +11,18 @@ import com.napnap.constant.CollectConstant;
 import com.napnap.constant.SortConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
+import com.napnap.dto.like.LikeRequest;
 import com.napnap.dto.post.PostAddRequest;
+import com.napnap.dto.post.PostDeleteRequest;
 import com.napnap.dto.post.PostSearchRequest;
 import com.napnap.dto.post.PostUpdateRequest;
+import com.napnap.entity.Collect;
 import com.napnap.entity.Post;
 import com.napnap.exception.BusinessException;
 import com.napnap.mapper.PostMapper;
 import com.napnap.service.CollectService;
+import com.napnap.service.CommentService;
+import com.napnap.service.LikeService;
 import com.napnap.service.PostService;
 import com.napnap.vo.PostVO;
 import com.napnap.vo.UserVO;
@@ -47,6 +52,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Resource
     private CollectService collectService;
+
+    @Resource
+    private LikeService likeService;
+
+    @Resource
+    private CommentService commentService;
 
     /**
      * 添加一条帖子
@@ -88,6 +99,35 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         queryWrapper.eq(Post::getUserId, userId);
         Page<Post> postPage = postMapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), queryWrapper);
         List<PostVO> postVoList = postPage.getRecords().stream().map(this::getPostVO).collect(Collectors.toList());
+        return new Page<PostVO>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal()).setRecords(postVoList);
+    }
+
+    /**
+     * 获取用户收藏的所有帖子
+     *
+     * @param pageRequest
+     * @return
+     */
+    @Override
+    public Page<PostVO> listAllPostByUserCollect(PageRequest pageRequest) {
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        // 从收藏表中查询出来用户收藏帖子的所有记录
+        LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
+        collectQueryWrapper.eq(Collect::getUid, userId);
+        collectQueryWrapper.eq(Collect::getType, CollectConstant.POST);
+        List<Collect> collectList = collectService.list(collectQueryWrapper);
+        List<Long> collectIdLIst = collectList.stream().map(Collect::getCollectedId).collect(Collectors.toList());
+        // 如果没有收藏记录，直接返回空
+        if (collectList.isEmpty()) {
+            return new Page<>();
+        }
+        // 根据记录的帖子ID，反查帖子表里面的数据
+        LambdaQueryWrapper<Post> postQueryWrapper = new LambdaQueryWrapper<>();
+        postQueryWrapper.in(Post::getId, collectIdLIst);
+        Page<Post> postPage = postMapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), postQueryWrapper);
+        List<Post> postList = postPage.getRecords();
+        List<PostVO> postVoList = postList.stream().map(this::getPostVO).collect(Collectors.toList());
         return new Page<PostVO>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal()).setRecords(postVoList);
     }
 
@@ -154,37 +194,37 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         return new Page<PostVO>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal()).setRecords(postVoList);
     }
 
-    /**
-     * 更改帖子点赞数
-     *
-     * @param postId
-     * @param num
-     */
-    @Override
-    public void changePostLikes(long postId, long num) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "点赞失败，帖子不存在");
-        }
-        post.setLikes(post.getLikes() + num);
-        postMapper.updateById(post);
-    }
-
-    /**
-     * 更改帖子收藏数
-     *
-     * @param postId
-     * @param num
-     */
-    @Override
-    public void changePostCollectNum(long postId, long num) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "收藏失败，帖子不存在");
-        }
-        post.setCollectNum(post.getCollectNum() + num);
-        postMapper.updateById(post);
-    }
+//    /**
+//     * 更改帖子点赞数
+//     *
+//     * @param postId
+//     * @param num
+//     */
+//    @Override
+//    public void changePostLikes(long postId, long num) {
+//        Post post = postMapper.selectById(postId);
+//        if (post == null) {
+//            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "点赞失败，帖子不存在");
+//        }
+//        post.setLikes(post.getLikes() + num);
+//        postMapper.updateById(post);
+//    }
+//
+//    /**
+//     * 更改帖子收藏数
+//     *
+//     * @param postId
+//     * @param num
+//     */
+//    @Override
+//    public void changePostCollectNum(long postId, long num) {
+//        Post post = postMapper.selectById(postId);
+//        if (post == null) {
+//            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "收藏失败，帖子不存在");
+//        }
+//        post.setCollectNum(post.getCollectNum() + num);
+//        postMapper.updateById(post);
+//    }
 
     /**
      * 收藏/取消收藏帖子
@@ -196,15 +236,15 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Override
     public PostVO collectPost(CollectRequest collectRequest) {
         // collectId 就是 tb_post 表的主键ID
-        Long collectId = collectRequest.getCollectId();
+        Long postId = collectRequest.getCollectId();
         Integer type = collectRequest.getType();
         Object loginUser = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         UserVO userVO = (UserVO) loginUser;
         Long userId = userVO.getId();
         // 收藏/取消收藏记录
-        boolean isCollect = collectService.changeCollectStatus(userId, collectId, type);
-        Post post = postMapper.selectById(collectId);
+        boolean isCollect = collectService.changeCollectStatus(userId, postId, type);
         // 如果是收藏
+        Post post = postMapper.selectById(postId);
         if (isCollect) {
             post.setCollectNum(post.getCollectNum() + 1);
         } else {
@@ -212,6 +252,60 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         }
         postMapper.updateById(post);
         return getPostVO(post);
+    }
+
+    /**
+     * 点赞/取消点赞帖子
+     *
+     * @param likeRequest
+     * @return
+     */
+    @Override
+    public PostVO likePost(LikeRequest likeRequest) {
+        Long postId = likeRequest.getPostId();
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        // 点赞/取消点赞记录
+        boolean isLike = likeService.changeLikeStatus(userId, postId);
+        // 如果是点赞
+        Post post = postMapper.selectById(postId);
+        if(isLike){
+            post.setLikes(post.getLikes() + 1);
+        } else {
+            post.setLikes(post.getLikes() - 1);
+        }
+        postMapper.updateById(post);
+        return getPostVO(post);
+    }
+
+    /**
+     * 删除帖子，同时将所有的帖子收藏记录也从 collect 表中删除，将所有帖子的点赞记录从 like 表中删除
+     *
+     * @return
+     */
+    @Transactional
+    @Override
+    public boolean deletePostById(PostDeleteRequest postDeleteRequest) {
+        Long postId = postDeleteRequest.getPostId();
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "要删除的帖子不存在");
+        }
+        // 判断帖子是否是该用户的，否则不允许删除
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        if(!post.getUserId().equals(userId)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "用户无法删除非自己发布的帖子");
+        }
+        // 删除 post 表中的帖子记录
+        postMapper.deleteById(postId);
+        // 删除 collect 表中的收藏记录
+        collectService.deleteAllCollectRecord(postId, CollectConstant.POST);
+        // 删除 like 表中的点赞记录
+        likeService.deleteAllLikeRecord(postId);
+        // 删除 comment 表中的评论记录
+        commentService.deleteCommentByPostId(postId);
+        return true;
     }
 
     /**

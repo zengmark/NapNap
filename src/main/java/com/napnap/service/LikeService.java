@@ -1,7 +1,7 @@
 package com.napnap.service;
 
-import com.napnap.entity.Like;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.napnap.entity.Like;
 
 /**
 * @author 13123
@@ -9,5 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2024-06-09 21:56:28
 */
 public interface LikeService extends IService<Like> {
+    boolean changeLikeStatus(Long userId, Long postId);
 
+    boolean deleteAllLikeRecord(Long postId);
 }

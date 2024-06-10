@@ -2,8 +2,8 @@ package com.napnap.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.entity.Follower;
-import com.napnap.service.FollowerService;
 import com.napnap.mapper.FollowerMapper;
+import com.napnap.service.FollowerService;
 import org.springframework.stereotype.Service;
 
 /**

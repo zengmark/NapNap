@@ -1,7 +1,7 @@
 package com.napnap.service;
 
-import com.napnap.entity.Collect;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.napnap.entity.Collect;
 
 /**
 * @author 13123
@@ -10,4 +10,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface CollectService extends IService<Collect> {
     boolean changeCollectStatus(long userId, long collectId, int type);
+
+    boolean deleteAllCollectRecord(long collectId, int type);
 }

@@ -1,7 +1,12 @@
 package com.napnap.service;
 
-import com.napnap.entity.Comment;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.napnap.dto.comment.CommentAddRequest;
+import com.napnap.dto.comment.CommentDeleteRequest;
+import com.napnap.dto.comment.CommentQueryRequest;
+import com.napnap.entity.Comment;
+import com.napnap.vo.CommentUnderPostVO;
 
 /**
 * @author 13123
@@ -10,4 +15,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface CommentService extends IService<Comment> {
 
+    boolean addComment(CommentAddRequest commentAddRequest);
+
+    Page<CommentUnderPostVO> listAllCommentUnderPost(CommentQueryRequest commentQueryRequest);
+
+    boolean deleteCommentById(CommentDeleteRequest commentDeleteRequest);
+
+    boolean deleteCommentByPostId(Long postId);
 }

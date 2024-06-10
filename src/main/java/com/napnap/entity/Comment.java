@@ -4,9 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
+import java.util.List;
 
 /**
  * 评论表
@@ -71,6 +76,26 @@ public class Comment implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    // JSON utility methods
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public List<String> getPictureList() {
+        try {
+            return objectMapper.readValue(picture, new TypeReference<List<String>>() {});
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void setPictureList(List<String> pictureList) {
+        try {
+            this.picture = objectMapper.writeValueAsString(pictureList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public boolean equals(Object that) {

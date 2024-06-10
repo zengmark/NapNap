@@ -2,8 +2,8 @@ package com.napnap.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.entity.Message;
-import com.napnap.service.MessageService;
 import com.napnap.mapper.MessageMapper;
+import com.napnap.service.MessageService;
 import org.springframework.stereotype.Service;
 
 /**
