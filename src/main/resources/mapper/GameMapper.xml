@@ -9,10 +9,11 @@
             <result property="gameName" column="game_name" jdbcType="VARCHAR"/>
             <result property="gameProfile" column="game_profile" jdbcType="VARCHAR"/>
             <result property="gameIcon" column="game_icon" jdbcType="VARCHAR"/>
-            <result property="tag" column="tag" jdbcType="VARCHAR"/>
+            <result property="tag" column="tag" jdbcType="OTHER"/>
             <result property="gameScore" column="game_score" jdbcType="DECIMAL"/>
             <result property="gameSize" column="game_size" jdbcType="DECIMAL"/>
             <result property="gameUrl" column="game_url" jdbcType="VARCHAR"/>
+            <result property="gameNum" column="game_num" jdbcType="BIGINT"/>
             <result property="collectNum" column="collect_num" jdbcType="BIGINT"/>
             <result property="downloadNum" column="download_num" jdbcType="BIGINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
@@ -23,8 +24,8 @@
     <sql id="Base_Column_List">
         id,game_name,game_profile,
         game_icon,tag,game_score,
-        game_size,game_url,collect_num,
-        download_num,create_time,update_time,
-        is_deleted
+        game_size,game_url,game_num,
+        collect_num,download_num,create_time,
+        update_time,is_deleted
     </sql>
 </mapper>

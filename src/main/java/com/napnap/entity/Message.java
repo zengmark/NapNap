@@ -23,6 +23,12 @@ public class Message implements Serializable {
     private Long id;
 
     /**
+     * 接收消息的用户ID
+     */
+    @TableField(value = "uid")
+    private Long uid;
+
+    /**
      * 消息来源ID
      */
     @TableField(value = "source_id")
@@ -31,8 +37,8 @@ public class Message implements Serializable {
     /**
      * 消息类型，0 新增关注，1 新增点赞，2 新增收藏，3 新增回复
      */
-    @TableField(value = "type")
-    private Integer type;
+    @TableField(value = "message_type")
+    private Integer messageType;
 
     /**
      * 是否为新消息，0 是新消息，1 是已读消息
@@ -74,12 +80,13 @@ public class Message implements Serializable {
         }
         Message other = (Message) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getSourceId() == null ? other.getSourceId() == null : this.getSourceId().equals(other.getSourceId()))
-            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
-            && (this.getVisible() == null ? other.getVisible() == null : this.getVisible().equals(other.getVisible()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getUid() == null ? other.getUid() == null : this.getUid().equals(other.getUid()))
+                && (this.getSourceId() == null ? other.getSourceId() == null : this.getSourceId().equals(other.getSourceId()))
+                && (this.getMessageType() == null ? other.getMessageType() == null : this.getMessageType().equals(other.getMessageType()))
+                && (this.getVisible() == null ? other.getVisible() == null : this.getVisible().equals(other.getVisible()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
     }
 
     @Override
@@ -87,8 +94,9 @@ public class Message implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+        result = prime * result + ((getUid() == null) ? 0 : getUid().hashCode());
         result = prime * result + ((getSourceId() == null) ? 0 : getSourceId().hashCode());
-        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
+        result = prime * result + ((getMessageType() == null) ? 0 : getMessageType().hashCode());
         result = prime * result + ((getVisible() == null) ? 0 : getVisible().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
@@ -103,8 +111,9 @@ public class Message implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
+        sb.append(", uid=").append(uid);
         sb.append(", sourceId=").append(sourceId);
-        sb.append(", type=").append(type);
+        sb.append(", messageType=").append(messageType);
         sb.append(", visible=").append(visible);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);

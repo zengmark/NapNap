@@ -7,6 +7,7 @@ import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
 import com.napnap.dto.collect.CollectRequest;
+import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.GameService;
@@ -63,4 +64,14 @@ public class GameController {
         return ResultUtils.success(gameVO);
     }
 
+    @ApiOperation("为游戏评分")
+    @LoginCheck
+    @PostMapping("/scoreGame")
+    public BaseResponse<GameVO> scoreGame(@RequestBody GameScoreRequest gameScoreRequest){
+        if(gameScoreRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        GameVO gameVO = gameService.scoreGame(gameScoreRequest);
+        return ResultUtils.success(gameVO);
+    }
 }

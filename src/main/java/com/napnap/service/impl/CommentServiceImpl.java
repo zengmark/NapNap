@@ -61,7 +61,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         Comment comment = new Comment();
         comment.setUid(userId);
         comment.setParentId(parentId);
-        comment.setType(type);
+        comment.setCommentType(type);
         comment.setContent(content);
         comment.setPictureList(picture);
         commentMapper.insert(comment);
@@ -94,7 +94,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         Page<Comment> page = new Page<>(current, pageSize);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentId, postId)
-                .eq(Comment::getType, CommentConstant.POST)
+                .eq(Comment::getCommentType, CommentConstant.POST)
                 .orderByDesc(Comment::getCreateTime);
 
         Page<Comment> commentPage = commentMapper.selectPage(page, queryWrapper);
@@ -121,7 +121,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     private List<CommentUnderPostVO> getCommentsRecursively(Long parentId, Integer type) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentId, parentId)
-                .eq(Comment::getType, type)
+                .eq(Comment::getCommentType, type)
                 .orderByDesc(Comment::getCreateTime);
 
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
@@ -156,7 +156,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         // 先查出该帖子下的第一级的所有评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentId, postId);
-        queryWrapper.eq(Comment::getType, CommentConstant.POST);
+        queryWrapper.eq(Comment::getCommentType, CommentConstant.POST);
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
         // 遍历所有第一级评论，递归删除所有子评论
         for (Comment comment : commentList) {
@@ -174,7 +174,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         // 查找所有子评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentId, parentId);
-        queryWrapper.eq(Comment::getType, CommentConstant.COMMENT);
+        queryWrapper.eq(Comment::getCommentType, CommentConstant.COMMENT);
 
         List<Comment> comments = commentMapper.selectList(queryWrapper);
         for (Comment comment : comments) {
@@ -186,6 +186,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         commentMapper.deleteById(parentId);
     }
 
+    /**
+     * 评论数据脱敏
+     * @param comment
+     * @return
+     */
     private CommentUnderPostVO getCommentUnderPostVO(Comment comment) {
         CommentUnderPostVO commentUnderPostVO = new CommentUnderPostVO();
         BeanUtil.copyProperties(comment, commentUnderPostVO);

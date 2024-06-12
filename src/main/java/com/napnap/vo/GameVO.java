@@ -49,6 +49,11 @@ public class GameVO implements Serializable {
     private String gameUrl;
 
     /**
+     * 评分数
+     */
+    private Long gameNum;
+
+    /**
      * 收藏数
      */
     private Long collectNum;

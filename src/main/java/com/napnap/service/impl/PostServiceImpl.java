@@ -115,7 +115,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 从收藏表中查询出来用户收藏帖子的所有记录
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.eq(Collect::getUid, userId);
-        collectQueryWrapper.eq(Collect::getType, CollectConstant.POST);
+        collectQueryWrapper.eq(Collect::getCollectType, CollectConstant.POST);
         List<Collect> collectList = collectService.list(collectQueryWrapper);
         List<Long> collectIdLIst = collectList.stream().map(Collect::getCollectedId).collect(Collectors.toList());
         // 如果没有收藏记录，直接返回空

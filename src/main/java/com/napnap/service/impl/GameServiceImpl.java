@@ -5,14 +5,17 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
 import com.napnap.constant.CollectConstant;
 import com.napnap.constant.SortConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
+import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
 import com.napnap.entity.Collect;
 import com.napnap.entity.Game;
+import com.napnap.exception.BusinessException;
 import com.napnap.mapper.GameMapper;
 import com.napnap.service.CollectService;
 import com.napnap.service.GameService;
@@ -24,17 +27,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
-* @author 13123
-* @description 针对表【tb_game(游戏表)】的数据库操作Service实现
-* @createDate 2024-06-09 18:05:51
-*/
+ * @author 13123
+ * @description 针对表【tb_game(游戏表)】的数据库操作Service实现
+ * @createDate 2024-06-09 18:05:51
+ */
 @Service
 public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
-    implements GameService{
+        implements GameService {
 
     @Resource
     private HttpServletRequest request;
@@ -47,6 +51,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
 
     /**
      * 根据搜索条件列举所有游戏
+     *
      * @param gameSearchRequest
      * @return
      */
@@ -82,6 +87,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
 
     /**
      * 获取用户收藏的所有游戏
+     *
      * @param pageRequest
      * @return
      */
@@ -92,7 +98,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         // 获取收藏表中用户收集的游戏的IDList
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.eq(Collect::getUid, userId);
-        collectQueryWrapper.eq(Collect::getType, CollectConstant.GAME);
+        collectQueryWrapper.eq(Collect::getCollectType, CollectConstant.GAME);
         List<Collect> collectList = collectService.list(collectQueryWrapper);
         List<Long> gameIdList = collectList.stream().map(Collect::getCollectedId).collect(Collectors.toList());
         // 根据 gameIdList 集合获取所有游戏
@@ -106,6 +112,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
 
     /**
      * 收藏/取消收藏游戏
+     *
      * @param collectRequest
      * @return
      */
@@ -120,7 +127,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         // 收藏/取消收藏记录
         boolean isCollect = collectService.changeCollectStatus(userId, gameId, type);
         Game game = gameMapper.selectById(gameId);
-        if(isCollect){
+        if (isCollect) {
             game.setCollectNum(game.getCollectNum() + 1);
         } else {
             game.setCollectNum(game.getCollectNum() - 1);
@@ -129,7 +136,36 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         return getGameVO(game);
     }
 
-    private GameVO getGameVO(Game game){
+    /**
+     * 给游戏评分
+     *
+     * @param gameScoreRequest
+     * @return
+     */
+    @Override
+    public GameVO scoreGame(GameScoreRequest gameScoreRequest) {
+        Long gameId = gameScoreRequest.getGameId();
+        Integer score = gameScoreRequest.getScore();
+        Game game = gameMapper.selectById(gameId);
+        if(game == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "评分的游戏不存在");
+        }
+        BigDecimal gameScore = game.getGameScore();
+        BigDecimal addScore = new BigDecimal(score);
+        Long gameNum = game.getGameNum();
+        BigDecimal divideScore = gameScore.multiply(new BigDecimal(gameNum)).add(addScore).divide(new BigDecimal(gameNum + 1), 1, BigDecimal.ROUND_HALF_UP);
+        game.setGameScore(divideScore);
+        game.setGameNum(gameNum + 1);
+        gameMapper.updateById(game);
+        return getGameVO(game);
+    }
+
+    /**
+     * 游戏数据脱敏
+     * @param game
+     * @return
+     */
+    private GameVO getGameVO(Game game) {
         GameVO gameVO = new GameVO();
         BeanUtil.copyProperties(game, gameVO);
         gameVO.setGameIcon(game.getGameIconList());

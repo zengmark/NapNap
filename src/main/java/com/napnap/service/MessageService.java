@@ -3,11 +3,17 @@ package com.napnap.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.napnap.entity.Message;
 
+import java.util.List;
+
 /**
 * @author 13123
 * @description 针对表【tb_message(消息表)】的数据库操作Service
 * @createDate 2024-06-09 21:56:28
 */
 public interface MessageService extends IService<Message> {
+    boolean addMessage(long sourceId, int type);
 
+    boolean deleteMessage(long sourceId, int type);
+
+    List<Long> listMessageCount();
 }

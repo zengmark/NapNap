@@ -8,11 +8,6 @@ import java.io.Serializable;
 public class UserUpdateRequest implements Serializable {
 
     /**
-     * 主键ID
-     */
-    private Long id;
-
-    /**
      * 用户名
      */
     private String userName;

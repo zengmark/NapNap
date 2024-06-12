@@ -6,8 +6,9 @@
 
     <resultMap id="BaseResultMap" type="com.napnap.entity.Message">
             <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="uid" column="uid" jdbcType="BIGINT"/>
             <result property="sourceId" column="source_id" jdbcType="BIGINT"/>
-            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="messageType" column="message_type" jdbcType="TINYINT"/>
             <result property="visible" column="visible" jdbcType="TINYINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
@@ -15,8 +16,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,source_id,type,
-        visible,create_time,update_time,
-        is_deleted
+        id,uid,source_id,
+        message_type,visible,create_time,
+        update_time,is_deleted
     </sql>
 </mapper>

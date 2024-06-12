@@ -8,7 +8,7 @@
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="uid" column="uid" jdbcType="BIGINT"/>
             <result property="parentId" column="parent_Id" jdbcType="BIGINT"/>
-            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="commentType" column="comment_type" jdbcType="TINYINT"/>
             <result property="content" column="content" jdbcType="VARCHAR"/>
             <result property="picture" column="picture" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
@@ -18,7 +18,7 @@
 
     <sql id="Base_Column_List">
         id,uid,parent_Id,
-        type,content,picture,
+        comment_type,content,picture,
         create_time,update_time,is_deleted
     </sql>
 </mapper>

@@ -62,6 +62,16 @@ public class PostController {
         return ResultUtils.success(postPage);
     }
 
+    @ApiOperation("根据搜索条件获取帖子（包括搜索关键词和标签）")
+    @PostMapping("/listAllPostBySearch")
+    public BaseResponse<Page<PostVO>> listAllPostBySearch(@RequestBody PostSearchRequest postSearchRequest) {
+        if (postSearchRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<PostVO> postVOPage = postService.listAllPostBySearch(postSearchRequest);
+        return ResultUtils.success(postVOPage);
+    }
+
     @ApiOperation("获取用户收藏的所有帖子")
     @LoginCheck
     @PostMapping("/listAllPostByUserCollect")
@@ -100,16 +110,6 @@ public class PostController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         return ResultUtils.success(postService.updatePost(postUpdateRequest));
-    }
-
-    @ApiOperation("根据搜索条件获取帖子（包括搜索关键词和标签）")
-    @PostMapping("/listAllPostBySearch")
-    public BaseResponse<Page<PostVO>> listAllPostBySearch(@RequestBody PostSearchRequest postSearchRequest) {
-        if (postSearchRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
-        }
-        Page<PostVO> postVOPage = postService.listAllPostBySearch(postSearchRequest);
-        return ResultUtils.success(postVOPage);
     }
 
     @ApiOperation("删除帖子")

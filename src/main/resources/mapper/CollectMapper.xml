@@ -8,7 +8,7 @@
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="uid" column="uid" jdbcType="BIGINT"/>
             <result property="collectedId" column="collected_id" jdbcType="BIGINT"/>
-            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="collectType" column="collect_type" jdbcType="TINYINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
@@ -16,7 +16,7 @@
 
     <sql id="Base_Column_List">
         id,uid,collected_id,
-        type,create_time,update_time,
+        collect_type,create_time,update_time,
         is_deleted
     </sql>
 </mapper>

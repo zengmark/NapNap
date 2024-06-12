@@ -46,7 +46,7 @@ public class Game implements Serializable {
     private String gameIcon;
 
     /**
-     * 标签
+     *
      */
     @TableField(value = "tag")
     private String tag;
@@ -68,6 +68,12 @@ public class Game implements Serializable {
      */
     @TableField(value = "game_url")
     private String gameUrl;
+
+    /**
+     * 评分数
+     */
+    @TableField(value = "game_num")
+    private Long gameNum;
 
     /**
      * 收藏数
@@ -152,18 +158,19 @@ public class Game implements Serializable {
         }
         Game other = (Game) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getGameName() == null ? other.getGameName() == null : this.getGameName().equals(other.getGameName()))
-            && (this.getGameProfile() == null ? other.getGameProfile() == null : this.getGameProfile().equals(other.getGameProfile()))
-            && (this.getGameIcon() == null ? other.getGameIcon() == null : this.getGameIcon().equals(other.getGameIcon()))
-            && (this.getTag() == null ? other.getTag() == null : this.getTag().equals(other.getTag()))
-            && (this.getGameScore() == null ? other.getGameScore() == null : this.getGameScore().equals(other.getGameScore()))
-            && (this.getGameSize() == null ? other.getGameSize() == null : this.getGameSize().equals(other.getGameSize()))
-            && (this.getGameUrl() == null ? other.getGameUrl() == null : this.getGameUrl().equals(other.getGameUrl()))
-            && (this.getCollectNum() == null ? other.getCollectNum() == null : this.getCollectNum().equals(other.getCollectNum()))
-            && (this.getDownloadNum() == null ? other.getDownloadNum() == null : this.getDownloadNum().equals(other.getDownloadNum()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
+                && (this.getGameName() == null ? other.getGameName() == null : this.getGameName().equals(other.getGameName()))
+                && (this.getGameProfile() == null ? other.getGameProfile() == null : this.getGameProfile().equals(other.getGameProfile()))
+                && (this.getGameIcon() == null ? other.getGameIcon() == null : this.getGameIcon().equals(other.getGameIcon()))
+                && (this.getTag() == null ? other.getTag() == null : this.getTag().equals(other.getTag()))
+                && (this.getGameScore() == null ? other.getGameScore() == null : this.getGameScore().equals(other.getGameScore()))
+                && (this.getGameSize() == null ? other.getGameSize() == null : this.getGameSize().equals(other.getGameSize()))
+                && (this.getGameUrl() == null ? other.getGameUrl() == null : this.getGameUrl().equals(other.getGameUrl()))
+                && (this.getGameNum() == null ? other.getGameNum() == null : this.getGameNum().equals(other.getGameNum()))
+                && (this.getCollectNum() == null ? other.getCollectNum() == null : this.getCollectNum().equals(other.getCollectNum()))
+                && (this.getDownloadNum() == null ? other.getDownloadNum() == null : this.getDownloadNum().equals(other.getDownloadNum()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
     }
 
     @Override
@@ -178,6 +185,7 @@ public class Game implements Serializable {
         result = prime * result + ((getGameScore() == null) ? 0 : getGameScore().hashCode());
         result = prime * result + ((getGameSize() == null) ? 0 : getGameSize().hashCode());
         result = prime * result + ((getGameUrl() == null) ? 0 : getGameUrl().hashCode());
+        result = prime * result + ((getGameNum() == null) ? 0 : getGameNum().hashCode());
         result = prime * result + ((getCollectNum() == null) ? 0 : getCollectNum().hashCode());
         result = prime * result + ((getDownloadNum() == null) ? 0 : getDownloadNum().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
@@ -200,6 +208,7 @@ public class Game implements Serializable {
         sb.append(", gameScore=").append(gameScore);
         sb.append(", gameSize=").append(gameSize);
         sb.append(", gameUrl=").append(gameUrl);
+        sb.append(", gameNum=").append(gameNum);
         sb.append(", collectNum=").append(collectNum);
         sb.append(", downloadNum=").append(downloadNum);
         sb.append(", createTime=").append(createTime);

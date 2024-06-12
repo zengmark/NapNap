@@ -2,8 +2,10 @@ package com.napnap.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.common.ErrorCode;
+import com.napnap.common.PageRequest;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
@@ -11,14 +13,18 @@ import com.napnap.dto.user.UserUpdateRequest;
 import com.napnap.entity.User;
 import com.napnap.exception.BusinessException;
 import com.napnap.mapper.UserMapper;
+import com.napnap.service.FollowerService;
 import com.napnap.service.UserService;
 import com.napnap.utils.PasswordUtil;
 import com.napnap.vo.UserVO;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author 13123
@@ -34,6 +40,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private FollowerService followerService;
 
     /**
      * 用户注册
@@ -103,15 +112,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public UserVO updateUserInfo(UserUpdateRequest userUpdateRequest) {
         // 从数据库中将用户信息查出来，然后更新信息
-        Long id = userUpdateRequest.getId();
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long id = userVO.getId();
         String userName = userUpdateRequest.getUserName();
         String userAvatar = userUpdateRequest.getUserAvatar();
         String userProfile = userUpdateRequest.getUserProfile();
         String userPassword = userUpdateRequest.getUserPassword();
         String encryptedPassword = PasswordUtil.encryptPassword(userPassword);
-        if (id == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
-        }
         User user = userMapper.selectById(id);
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
@@ -154,6 +161,53 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         user.setFocusNum(user.getFocusNum() + num);
         userMapper.updateById(user);
+    }
+
+    /**
+     * 获取用户关注列表
+     *
+     * @param pageRequest
+     * @return
+     */
+    @Override
+    public Page<UserVO> listUserFocus(PageRequest pageRequest) {
+        int current = pageRequest.getCurrent();
+        int pageSize = pageRequest.getPageSize();
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        List<Long> idList = followerService.listFocusIds(userId, current, pageSize);
+        // 根据 IdList 查询所有关注用户信息返回
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        if (CollectionUtils.isNotEmpty(idList)) {
+            queryWrapper.in(User::getId, idList);
+        }
+        Page<User> userPage = userMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
+        List<User> userList = userPage.getRecords();
+        List<UserVO> userVoList = userList.stream().map(this::getUserVO).collect(Collectors.toList());
+        return new Page<UserVO>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal()).setRecords(userVoList);
+    }
+
+    /**
+     * 获取用户粉丝列表
+     *
+     * @param pageRequest
+     * @return
+     */
+    public Page<UserVO> listUserFollowers(PageRequest pageRequest) {
+        int current = pageRequest.getCurrent();
+        int pageSize = pageRequest.getPageSize();
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        List<Long> idList = followerService.listFollowerIds(userId, current, pageSize);
+        // 根据 idList 查询所有粉丝用户信息返回
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        if(CollectionUtils.isNotEmpty(idList)){
+            queryWrapper.in(User::getId, idList);
+        }
+        Page<User> userPage = userMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
+        List<User> userList = userPage.getRecords();
+        List<UserVO> userVoList = userList.stream().map(this::getUserVO).collect(Collectors.toList());
+        return new Page<UserVO>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal()).setRecords(userVoList);
     }
 
     /**

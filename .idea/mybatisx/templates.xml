@@ -69,24 +69,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="Like" />
-                  <option name="tableName" value="tb_like" />
-                </TableUIInfo>
-                <TableUIInfo>
                   <option name="className" value="Message" />
                   <option name="tableName" value="tb_message" />
-                </TableUIInfo>
-                <TableUIInfo>
-                  <option name="className" value="Follower" />
-                  <option name="tableName" value="tb_follower" />
-                </TableUIInfo>
-                <TableUIInfo>
-                  <option name="className" value="Comment" />
-                  <option name="tableName" value="tb_comment" />
-                </TableUIInfo>
-                <TableUIInfo>
-                  <option name="className" value="Collect" />
-                  <option name="tableName" value="tb_collect" />
                 </TableUIInfo>
               </list>
             </option>

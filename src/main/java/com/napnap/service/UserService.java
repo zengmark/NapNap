@@ -1,6 +1,8 @@
 package com.napnap.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.napnap.common.PageRequest;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
 import com.napnap.dto.user.UserUpdateRequest;
@@ -23,4 +25,8 @@ public interface UserService extends IService<User> {
     void changeUserFans(long userId, long num);
 
     void changeUserFocus(long userId, long num);
+
+    Page<UserVO> listUserFocus(PageRequest pageRequest);
+
+    Page<UserVO> listUserFollowers(PageRequest pageRequest);
 }

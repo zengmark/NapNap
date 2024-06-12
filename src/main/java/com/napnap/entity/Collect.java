@@ -37,8 +37,8 @@ public class Collect implements Serializable {
     /**
      * 收藏类型，0 帖子，1 代表游戏
      */
-    @TableField(value = "type")
-    private Integer type;
+    @TableField(value = "collect_type")
+    private Integer collectType;
 
     /**
      * 创建时间
@@ -76,7 +76,7 @@ public class Collect implements Serializable {
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getUid() == null ? other.getUid() == null : this.getUid().equals(other.getUid()))
             && (this.getCollectedId() == null ? other.getCollectedId() == null : this.getCollectedId().equals(other.getCollectedId()))
-            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+            && (this.getCollectType() == null ? other.getCollectType() == null : this.getCollectType().equals(other.getCollectType()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
             && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
@@ -89,7 +89,7 @@ public class Collect implements Serializable {
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getUid() == null) ? 0 : getUid().hashCode());
         result = prime * result + ((getCollectedId() == null) ? 0 : getCollectedId().hashCode());
-        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
+        result = prime * result + ((getCollectType() == null) ? 0 : getCollectType().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
@@ -105,7 +105,7 @@ public class Collect implements Serializable {
         sb.append(", id=").append(id);
         sb.append(", uid=").append(uid);
         sb.append(", collectedId=").append(collectedId);
-        sb.append(", type=").append(type);
+        sb.append(", collectType=").append(collectType);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", isDeleted=").append(isDeleted);

@@ -33,7 +33,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
         LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Collect::getUid, userId);
         queryWrapper.eq(Collect::getCollectedId, collectId);
-        queryWrapper.eq(Collect::getType, type);
+        queryWrapper.eq(Collect::getCollectType, type);
         Collect collect = collectMapper.selectOne(queryWrapper);
         // 存在记录的情况下，将其逻辑删除
         if(collect != null){
@@ -52,7 +52,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
         collect = new Collect();
         collect.setUid(userId);
         collect.setCollectedId(collectId);
-        collect.setType(type);
+        collect.setCollectType(type);
         collectMapper.insert(collect);
         return true;
     }
@@ -67,7 +67,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
     public boolean deleteAllCollectRecord(long collectId, int type) {
         LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Collect::getCollectedId, collectId);
-        queryWrapper.eq(Collect::getType, type);
+        queryWrapper.eq(Collect::getCollectType, type);
         collectMapper.delete(queryWrapper);
         return true;
     }

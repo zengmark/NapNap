@@ -1,15 +1,15 @@
 package com.napnap.controller;
 
-import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.napnap.annotation.LoginCheck;
 import com.napnap.common.BaseResponse;
 import com.napnap.common.ErrorCode;
+import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
 import com.napnap.dto.user.UserUpdateRequest;
-import com.napnap.entity.User;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.UserService;
 import com.napnap.vo.UserVO;
@@ -89,6 +89,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "更新用户信息", notes = "更新用户信息")
+    @LoginCheck
     @PutMapping("/updateUserInfo")
     public BaseResponse<UserVO> updateUserInfo(@RequestBody UserUpdateRequest userUpdateRequest){
         if(userUpdateRequest == null){
@@ -98,15 +99,37 @@ public class UserController {
         return ResultUtils.success(userVO);
     }
 
-    /**
-     * 用户数据脱敏
-     *
-     * @param user
-     * @return
-     */
-    private UserVO getUserVO(User user) {
-        UserVO userVO = new UserVO();
-        BeanUtil.copyProperties(user, userVO);
-        return userVO;
+    @ApiOperation("获取用户关注列表")
+    @LoginCheck
+    @PostMapping("/listUserFocus")
+    public BaseResponse<Page<UserVO>> listUserFocus(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<UserVO> userVOPage = userService.listUserFocus(pageRequest);
+        return ResultUtils.success(userVOPage);
     }
+
+    @ApiOperation("获取用户粉丝列表")
+    @LoginCheck
+    @PostMapping("/listUserFollowers")
+    public BaseResponse<Page<UserVO>> listUserFollowers(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<UserVO> userVOPage = userService.listUserFollowers(pageRequest);
+        return ResultUtils.success(userVOPage);
+    }
+
+//    /**
+//     * 用户数据脱敏
+//     *
+//     * @param user
+//     * @return
+//     */
+//    private UserVO getUserVO(User user) {
+//        UserVO userVO = new UserVO();
+//        BeanUtil.copyProperties(user, userVO);
+//        return userVO;
+//    }
 }

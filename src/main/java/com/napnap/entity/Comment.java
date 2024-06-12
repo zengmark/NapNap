@@ -41,8 +41,8 @@ public class Comment implements Serializable {
     /**
      * 评论类型，0 是评论帖子，1 是评论评论
      */
-    @TableField(value = "type")
-    private Integer type;
+    @TableField(value = "comment_type")
+    private Integer commentType;
 
     /**
      * 评论内容
@@ -112,7 +112,7 @@ public class Comment implements Serializable {
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getUid() == null ? other.getUid() == null : this.getUid().equals(other.getUid()))
             && (this.getParentId() == null ? other.getParentId() == null : this.getParentId().equals(other.getParentId()))
-            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+            && (this.getCommentType() == null ? other.getCommentType() == null : this.getCommentType().equals(other.getCommentType()))
             && (this.getContent() == null ? other.getContent() == null : this.getContent().equals(other.getContent()))
             && (this.getPicture() == null ? other.getPicture() == null : this.getPicture().equals(other.getPicture()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
@@ -127,7 +127,7 @@ public class Comment implements Serializable {
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getUid() == null) ? 0 : getUid().hashCode());
         result = prime * result + ((getParentId() == null) ? 0 : getParentId().hashCode());
-        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
+        result = prime * result + ((getCommentType() == null) ? 0 : getCommentType().hashCode());
         result = prime * result + ((getContent() == null) ? 0 : getContent().hashCode());
         result = prime * result + ((getPicture() == null) ? 0 : getPicture().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
@@ -145,7 +145,7 @@ public class Comment implements Serializable {
         sb.append(", id=").append(id);
         sb.append(", uid=").append(uid);
         sb.append(", parentId=").append(parentId);
-        sb.append(", type=").append(type);
+        sb.append(", commentType=").append(commentType);
         sb.append(", content=").append(content);
         sb.append(", picture=").append(picture);
         sb.append(", createTime=").append(createTime);
