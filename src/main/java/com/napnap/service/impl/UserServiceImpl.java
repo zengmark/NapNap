@@ -19,6 +19,7 @@ import com.napnap.utils.PasswordUtil;
 import com.napnap.vo.UserVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -216,7 +217,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @param user
      * @return
      */
-    private UserVO getUserVO(User user) {
+    public UserVO getUserVO(User user) {
         UserVO userVO = new UserVO();
         BeanUtil.copyProperties(user, userVO);
         return userVO;

@@ -304,7 +304,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 删除 like 表中的点赞记录
         likeService.deleteAllLikeRecord(postId);
         // 删除 comment 表中的评论记录
-        commentService.deleteCommentByPostId(postId);
+        commentService.deleteCommentByPostId(postId, userId);
         return true;
     }
 

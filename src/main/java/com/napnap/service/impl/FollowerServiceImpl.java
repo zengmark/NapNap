@@ -3,6 +3,7 @@ package com.napnap.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.common.ErrorCode;
+import com.napnap.constant.MessageConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.entity.Follower;
 import com.napnap.entity.User;
@@ -10,6 +11,7 @@ import com.napnap.exception.BusinessException;
 import com.napnap.mapper.FollowerMapper;
 import com.napnap.mapper.UserMapper;
 import com.napnap.service.FollowerService;
+import com.napnap.service.MessageService;
 import com.napnap.vo.UserVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,9 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private MessageService messageService;
 
     /**
      * 添加关注记录
@@ -66,8 +71,8 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户信息不存在");
         }
         user.setFocusNum(user.getFocusNum() + 1);
-        // TODO：发送一条消息
-
+        // 发送一条消息到消息表中
+        messageService.addMessage(follower.getId(), MessageConstant.FOCUS, followerId);
         return true;
     }
 
@@ -97,7 +102,8 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户信息不存在");
         }
         user.setFocusNum(user.getFocusNum() - 1);
-        // TODO：删除消息
+        // 删除消息表中的消息
+        messageService.deleteMessage(follower.getId(), MessageConstant.FOCUS, followerId);
         return true;
     }
 

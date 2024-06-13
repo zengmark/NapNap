@@ -15,7 +15,6 @@ spring:
     # 30 天过期
     timeout: 2592000
   # 数据库配置
-  # todo 需替换配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/napnap
@@ -32,6 +31,8 @@ spring:
     multipart:
       # 大小限制
       max-file-size: 10MB
+  main:
+    allow-circular-references: true
 server:
   address: 0.0.0.0
   port: 8888

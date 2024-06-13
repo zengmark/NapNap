@@ -29,4 +29,6 @@ public interface UserService extends IService<User> {
     Page<UserVO> listUserFocus(PageRequest pageRequest);
 
     Page<UserVO> listUserFollowers(PageRequest pageRequest);
+
+    UserVO getUserVO(User user);
 }

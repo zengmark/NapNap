@@ -7,18 +7,23 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.common.ErrorCode;
 import com.napnap.constant.CommentConstant;
+import com.napnap.constant.MessageConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.comment.CommentAddRequest;
 import com.napnap.dto.comment.CommentDeleteRequest;
 import com.napnap.dto.comment.CommentQueryRequest;
 import com.napnap.entity.Comment;
+import com.napnap.entity.Post;
 import com.napnap.exception.BusinessException;
 import com.napnap.mapper.CommentMapper;
+import com.napnap.mapper.PostMapper;
 import com.napnap.service.CommentService;
+import com.napnap.service.MessageService;
 import com.napnap.vo.CommentUnderPostVO;
 import com.napnap.vo.UserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -40,12 +45,19 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     @Resource
     private CommentMapper commentMapper;
 
+    @Resource
+    private PostMapper postMapper;
+
+    @Resource
+    private MessageService messageService;
+
     /**
      * 添加评论
      *
      * @param commentAddRequest
      * @return
      */
+    @Transactional
     @Override
     public boolean addComment(CommentAddRequest commentAddRequest) {
         Long parentId = commentAddRequest.getParentId();
@@ -58,6 +70,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
+        // 评论表插入一条数据
         Comment comment = new Comment();
         comment.setUid(userId);
         comment.setParentId(parentId);
@@ -65,6 +78,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         comment.setContent(content);
         comment.setPictureList(picture);
         commentMapper.insert(comment);
+        // 消息表插入一条消息
+        // 查找被评论的用户的ID
+        Long followerId = null;
+        if (CommentConstant.POST.equals(type)) {
+            Post post = postMapper.selectById(parentId);
+            followerId = post.getUserId();
+        } else {
+            Comment commentParent = commentMapper.selectById(parentId);
+            followerId = commentParent.getUid();
+        }
+        messageService.addMessage(comment.getId(), MessageConstant.COMMENT, followerId);
         return true;
     }
 
@@ -134,25 +158,30 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     }
 
     /**
-     * 删除评论，同时要删除该评论下的所有评论
+     * 删除评论，同时要删除该评论下的所有评论，同时删除所有消息
      *
      * @param commentDeleteRequest
      * @return
      */
+    @Transactional
     @Override
     public boolean deleteCommentById(CommentDeleteRequest commentDeleteRequest) {
         Long commentId = commentDeleteRequest.getCommentId();
-        deleteCommentsRecursively(commentId);
+        UserVO userVO = (UserVO)request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        // 递归删除评论
+        deleteCommentsRecursively(commentId, userId);
         return true;
     }
 
     /**
      * 根据帖子 ID 删除这个帖子下的所有评论
+     *
      * @param postId
      * @return
      */
     @Override
-    public boolean deleteCommentByPostId(Long postId) {
+    public boolean deleteCommentByPostId(Long postId, Long userId) {
         // 先查出该帖子下的第一级的所有评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentId, postId);
@@ -160,7 +189,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
         // 遍历所有第一级评论，递归删除所有子评论
         for (Comment comment : commentList) {
-            deleteCommentsRecursively(comment.getId());
+            deleteCommentsRecursively(comment.getId(), userId);
         }
         return true;
     }
@@ -169,25 +198,29 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
      * 递归删除子评论
      *
      * @param parentId
+     * @param userId
      */
-    private void deleteCommentsRecursively(Long parentId) {
+    private void deleteCommentsRecursively(Long parentId, Long userId) {
         // 查找所有子评论
-        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getParentId, parentId);
-        queryWrapper.eq(Comment::getCommentType, CommentConstant.COMMENT);
+        LambdaQueryWrapper<Comment> commentQueryWrapper = new LambdaQueryWrapper<>();
+        commentQueryWrapper.eq(Comment::getParentId, parentId);
+        commentQueryWrapper.eq(Comment::getCommentType, CommentConstant.COMMENT);
 
-        List<Comment> comments = commentMapper.selectList(queryWrapper);
+        List<Comment> comments = commentMapper.selectList(commentQueryWrapper);
         for (Comment comment : comments) {
             // 递归删除子评论的子评论
-            deleteCommentsRecursively(comment.getId());
+            deleteCommentsRecursively(comment.getId(), userId);
         }
 
         // 删除当前评论（逻辑删除）
         commentMapper.deleteById(parentId);
+        // 查找对应的消息表，将消息表中的数据进行删除11
+        messageService.deleteMessage(parentId, MessageConstant.COMMENT, userId);
     }
 
     /**
      * 评论数据脱敏
+     *
      * @param comment
      * @return
      */

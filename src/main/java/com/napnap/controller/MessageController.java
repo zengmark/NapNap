@@ -3,15 +3,18 @@ package com.napnap.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.napnap.annotation.LoginCheck;
 import com.napnap.common.BaseResponse;
+import com.napnap.common.ErrorCode;
+import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
+import com.napnap.exception.BusinessException;
 import com.napnap.service.MessageService;
+import com.napnap.vo.MessageCollectVO;
+import com.napnap.vo.MessageCommentVO;
+import com.napnap.vo.MessageLikeVO;
 import com.napnap.vo.UserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -41,32 +44,44 @@ public class MessageController {
     @ApiOperation("获取关注人列表")
     @LoginCheck
     @PostMapping("/listMessageByFocus")
-    public BaseResponse<Page<UserVO>> listMessageByFocus(){
-
-        return null;
+    public BaseResponse<Page<UserVO>> listMessageByFocus(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<UserVO> userVOPage = messageService.listMessageByFocus(pageRequest);
+        return ResultUtils.success(userVOPage);
     }
 
     @ApiOperation("获取点赞列表")
     @LoginCheck
     @PostMapping("/listMessageByLike")
-    public BaseResponse<Page<UserVO>> listMessageByLike(){
-
-        return null;
+    public BaseResponse<Page<MessageLikeVO>> listMessageByLike(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<MessageLikeVO> messageLikeVOPage = messageService.listMessageByLike(pageRequest);
+        return ResultUtils.success(messageLikeVOPage);
     }
 
     @ApiOperation("获取收藏列表")
     @LoginCheck
     @PostMapping("/listMessageByCollect")
-    public BaseResponse<Page<UserVO>> listMessageByCollect(){
-
-        return null;
+    public BaseResponse<Page<MessageCollectVO>> listMessageByCollect(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<MessageCollectVO> messageCollectVOPage = messageService.listMessageByCollect(pageRequest);
+        return ResultUtils.success(messageCollectVOPage);
     }
 
     @ApiOperation("获取回复列表")
     @LoginCheck
     @PostMapping("/listMessageByComment")
-    public BaseResponse<Page<UserVO>> listMessageByComment(){
-
-        return null;
+    public BaseResponse<Page<MessageCommentVO>> listMessageByComment(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<MessageCommentVO> messageCommentVOPage = messageService.listMessageByComment(pageRequest);
+        return ResultUtils.success(messageCommentVOPage);
     }
 }

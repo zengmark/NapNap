@@ -2,12 +2,18 @@ package com.napnap.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.napnap.constant.MessageConstant;
+import com.napnap.constant.UserConstant;
 import com.napnap.entity.Collect;
 import com.napnap.mapper.CollectMapper;
 import com.napnap.service.CollectService;
+import com.napnap.service.MessageService;
+import com.napnap.vo.UserVO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author 13123
@@ -19,7 +25,13 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
     implements CollectService{
 
     @Resource
+    private HttpServletRequest request;
+
+    @Resource
     private CollectMapper collectMapper;
+
+    @Resource
+    private MessageService messageService;
 
     /**
      * 一条收藏记录，返回值为 true 代表是收藏，返回值为 false 代表是取消收藏
@@ -45,6 +57,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
 //            } else {
 //                throw new BusinessException(ErrorCode.PARAMS_ERROR, "没有该类型的收藏数据");
 //            }
+            messageService.deleteMessage(collect.getId(), MessageConstant.COLLECT, userId);
             collectMapper.deleteById(collect);
             return false;
         }
@@ -54,6 +67,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
         collect.setCollectedId(collectId);
         collect.setCollectType(type);
         collectMapper.insert(collect);
+        messageService.addMessage(collect.getId(), MessageConstant.COLLECT, userId);
         return true;
     }
 
@@ -65,9 +79,15 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, Collect>
      */
     @Override
     public boolean deleteAllCollectRecord(long collectId, int type) {
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
         LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Collect::getCollectedId, collectId);
         queryWrapper.eq(Collect::getCollectType, type);
+        List<Collect> collectList = collectMapper.selectList(queryWrapper);
+        for (Collect collect : collectList) {
+            messageService.deleteMessage(collect.getId(), MessageConstant.COLLECT, userId);
+        }
         collectMapper.delete(queryWrapper);
         return true;
     }
