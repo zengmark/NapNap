@@ -160,6 +160,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是粉丝表的主键ID
         List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.FOCUS);
+        // 将消息设置为 INVISIBLE
+        setMessageInVisible(sourceIdList);
         // 查询用户ID
         LambdaQueryWrapper<Follower> followerQueryWrapper = new LambdaQueryWrapper<>();
         followerQueryWrapper.in(Follower::getId, sourceIdList);
@@ -186,6 +188,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是点赞表的主键ID
         List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.LIKE);
+        // 将消息设置为 INVISIBLE
+        setMessageInVisible(sourceIdList);
         // 获取点赞列表的ID
         LambdaQueryWrapper<Like> likeQueryWrapper = new LambdaQueryWrapper<>();
         likeQueryWrapper.in(Like::getId, sourceIdList);
@@ -222,6 +226,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是收藏表的主键ID
         List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.COLLECT);
+        // 将消息设置为 INVISIBLE
+        setMessageInVisible(sourceIdList);
         // 查询用户ID
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.in(Collect::getId, sourceIdList);
@@ -256,6 +262,9 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是评论表的主键ID
         List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.COMMENT);
+        // 将消息设置为 INVISIBLE
+        setMessageInVisible(sourceIdList);
+        // 查询需要获取的评论
         LambdaQueryWrapper<Comment> commentQueryWrapper = new LambdaQueryWrapper<>();
         commentQueryWrapper.in(Comment::getId, sourceIdList);
         Page<Comment> commentPage = commentService.page(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), commentQueryWrapper);
@@ -271,7 +280,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             UserVO userVOInfo = userService.getUserVO(user);
             // 查询被评论内容，如果被评论的是帖子，那就是帖子的标题，如果被评论的是内容，那么就是内容
             String contentBeComment = "";
-            if(CommentConstant.POST.equals(commentType)){
+            if (CommentConstant.POST.equals(commentType)) {
                 Post post = postService.getById(parentId);
                 contentBeComment = post.getTitle();
             } else {
@@ -286,6 +295,19 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             return messageCommentVO;
         }).collect(Collectors.toList());
         return new Page<MessageCommentVO>(commentPage.getCurrent(), commentPage.getSize(), commentPage.getTotal()).setRecords(messageCommentVOList);
+    }
+
+    /**
+     * 设置消息为 INVISIBLE
+     *
+     * @param sourceIdList
+     */
+    private void setMessageInVisible(List<Long> sourceIdList) {
+        List<Message> messageList = messageMapper.selectBatchIds(sourceIdList);
+        for (Message message : messageList) {
+            message.setVisible(MessageConstant.INVISIBLE);
+            messageMapper.updateById(message);
+        }
     }
 
     /**

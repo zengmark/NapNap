@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -13,12 +14,16 @@ import java.util.Date;
  * 消息表
  * @TableName tb_message
  */
+@Entity
+@Table(name = "tb_message")
 @TableName(value ="tb_message")
 @Data
 public class Message implements Serializable {
     /**
      * 主键ID
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -50,18 +55,23 @@ public class Message implements Serializable {
      * 创建时间
      */
     @TableField(value = "create_time")
+    @Column(name = "create_time")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "update_time")
+    @Column(name = "update_time")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
     /**
      * 是否删除
      */
     @TableField(value = "is_deleted")
+    @Column(name = "is_deleted")
     private Integer isDeleted;
 
     @TableField(exist = false)
