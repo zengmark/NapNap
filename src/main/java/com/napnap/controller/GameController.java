@@ -7,8 +7,10 @@ import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
 import com.napnap.dto.collect.CollectRequest;
+import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
+import com.napnap.entity.Game;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.GameService;
 import com.napnap.vo.GameVO;
@@ -72,6 +74,16 @@ public class GameController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         GameVO gameVO = gameService.scoreGame(gameScoreRequest);
+        return ResultUtils.success(gameVO);
+    }
+
+    @ApiOperation("添加游戏")
+    @PostMapping("/addGame")
+    public BaseResponse<GameVO> addGame(@RequestBody GameAddRequest gameAddRequest){
+        if(gameAddRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        GameVO gameVO = gameService.addGame(gameAddRequest);
         return ResultUtils.success(gameVO);
     }
 }

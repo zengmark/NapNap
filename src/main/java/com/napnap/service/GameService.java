@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.napnap.common.PageRequest;
 import com.napnap.dto.collect.CollectRequest;
+import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
 import com.napnap.entity.Game;
@@ -23,4 +24,6 @@ public interface GameService extends IService<Game> {
     GameVO collectGame(CollectRequest collectRequest);
 
     GameVO scoreGame(GameScoreRequest gameScoreRequest);
+
+    GameVO addGame(GameAddRequest gameAddRequest);
 }

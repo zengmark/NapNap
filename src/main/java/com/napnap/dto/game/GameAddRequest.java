@@ -1,5 +1,6 @@
-package com.napnap.vo;
+package com.napnap.dto.game;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -7,11 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class GameVO implements Serializable {
-    /**
-     * 主键ID
-     */
-    private Long id;
+public class GameAddRequest implements Serializable {
 
     /**
      * 游戏名称
@@ -29,39 +26,20 @@ public class GameVO implements Serializable {
     private String gameIcon;
 
     /**
-     * 标签
+     *
      */
     private List<String> tag;
 
     /**
-     * 评分
-     */
-    private BigDecimal gameScore;
-
-    /**
      * 游戏大小
      */
+    @TableField(value = "game_size")
     private BigDecimal gameSize;
 
     /**
      * 游戏链接
      */
-    private String gameUrl;
-
-    /**
-     * 评分数
-     */
-    private Long gameNum;
-
-    /**
-     * 收藏数
-     */
-    private Long collectNum;
-
-    /**
-     * 下载量
-     */
-    private Long downloadNum;
+//    private String gameUrl;
 
     private static final long serialVersionUID = 1L;
 }

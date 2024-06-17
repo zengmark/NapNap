@@ -128,22 +128,22 @@ public class Game implements Serializable {
         }
     }
 
-    public List<String> getGameIconList() {
-        try {
-            return objectMapper.readValue(gameIcon, new TypeReference<List<String>>() {});
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public void setGameIconList(List<String> gameIconList) {
-        try {
-            this.gameIcon = objectMapper.writeValueAsString(gameIconList);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public List<String> getGameIconList() {
+//        try {
+//            return objectMapper.readValue(gameIcon, new TypeReference<List<String>>() {});
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
+//
+//    public void setGameIconList(List<String> gameIconList) {
+//        try {
+//            this.gameIcon = objectMapper.writeValueAsString(gameIconList);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public boolean equals(Object that) {

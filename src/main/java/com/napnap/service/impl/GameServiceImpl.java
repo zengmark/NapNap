@@ -11,6 +11,7 @@ import com.napnap.constant.CollectConstant;
 import com.napnap.constant.SortConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
+import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
 import com.napnap.entity.Collect;
@@ -147,7 +148,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         Long gameId = gameScoreRequest.getGameId();
         Integer score = gameScoreRequest.getScore();
         Game game = gameMapper.selectById(gameId);
-        if(game == null){
+        if (game == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "评分的游戏不存在");
         }
         BigDecimal gameScore = game.getGameScore();
@@ -161,14 +162,44 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
     }
 
     /**
+     * 添加游戏
+     *
+     * @param gameAddRequest
+     * @return
+     */
+    @Override
+    public GameVO addGame(GameAddRequest gameAddRequest) {
+        String gameName = gameAddRequest.getGameName();
+        String gameProfile = gameAddRequest.getGameProfile();
+        String gameIcon = gameAddRequest.getGameIcon();
+        List<String> tagList = gameAddRequest.getTag();
+        BigDecimal gameSize = gameAddRequest.getGameSize();
+        LambdaQueryWrapper<Game> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Game::getGameName, gameName);
+        Game game = gameMapper.selectOne(queryWrapper);
+        if (game != null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "游戏名重复");
+        }
+        game = new Game();
+        game.setGameName(gameName);
+        game.setGameProfile(gameProfile);
+        game.setGameIcon(gameIcon);
+        game.setTagList(tagList);
+        game.setGameSize(gameSize);
+        gameMapper.insert(game);
+        return getGameVO(game);
+    }
+
+    /**
      * 游戏数据脱敏
+     *
      * @param game
      * @return
      */
     private GameVO getGameVO(Game game) {
         GameVO gameVO = new GameVO();
         BeanUtil.copyProperties(game, gameVO);
-        gameVO.setGameIcon(game.getGameIconList());
+        gameVO.setGameIcon(game.getGameIcon());
         gameVO.setTag(game.getTagList());
         return gameVO;
     }

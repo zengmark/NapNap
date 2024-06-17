@@ -117,8 +117,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String userName = userUpdateRequest.getUserName();
         String userAvatar = userUpdateRequest.getUserAvatar();
         String userProfile = userUpdateRequest.getUserProfile();
-        String userPassword = userUpdateRequest.getUserPassword();
-        String encryptedPassword = PasswordUtil.encryptPassword(userPassword);
+//        String userPassword = userUpdateRequest.getUserPassword();
+//        String encryptedPassword = PasswordUtil.encryptPassword(userPassword);
         User user = userMapper.selectById(id);
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
@@ -126,7 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserName(userName);
         user.setUserAvatar(userAvatar);
         user.setUserProfile(userProfile);
-        user.setUserPassword(encryptedPassword);
+//        user.setUserPassword(encryptedPassword);
         userMapper.updateById(user);
         return getUserVO(user);
     }

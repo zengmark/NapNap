@@ -70,3 +70,11 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.napnap.controller
+gitee:
+  api:
+    url: https://gitee.com/api/v5
+  repo:
+    owner: Code_for_love
+    name: napnapimages
+#  branch: main
+  token: 309e6ae3d127b9f0e8b59927a3c0ac0f

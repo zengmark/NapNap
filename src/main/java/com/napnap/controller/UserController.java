@@ -9,9 +9,12 @@ import com.napnap.common.ResultUtils;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
+import com.napnap.dto.user.UserUpdatePasswordRequest;
 import com.napnap.dto.user.UserUpdateRequest;
+import com.napnap.entity.User;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.UserService;
+import com.napnap.utils.PasswordUtil;
 import com.napnap.vo.UserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -97,6 +100,23 @@ public class UserController {
         }
         UserVO userVO = userService.updateUserInfo(userUpdateRequest);
         return ResultUtils.success(userVO);
+    }
+
+    @ApiOperation("更新用户密码")
+    @LoginCheck
+    @PutMapping("/updateUserPassword")
+    public BaseResponse<Boolean> updateUserPassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest){
+        if(userUpdatePasswordRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入的参数为空");
+        }
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        User user = userService.getById(userId);
+        String userPassword = userUpdatePasswordRequest.getUserPassword();
+        String encryptedPassword = PasswordUtil.encryptPassword(userPassword);
+        user.setUserPassword(encryptedPassword);
+        userService.updateById(user);
+        return ResultUtils.success(true);
     }
 
     @ApiOperation("获取用户关注列表")
