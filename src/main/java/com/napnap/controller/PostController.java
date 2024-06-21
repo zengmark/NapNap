@@ -1,26 +1,33 @@
 package com.napnap.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.napnap.annotation.LoginCheck;
 import com.napnap.common.BaseResponse;
 import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
+import com.napnap.constant.CollectConstant;
+import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.like.LikeRequest;
 import com.napnap.dto.post.PostAddRequest;
 import com.napnap.dto.post.PostDeleteRequest;
 import com.napnap.dto.post.PostSearchRequest;
 import com.napnap.dto.post.PostUpdateRequest;
+import com.napnap.entity.Collect;
 import com.napnap.exception.BusinessException;
+import com.napnap.service.CollectService;
 import com.napnap.service.PostService;
 import com.napnap.vo.PostVO;
+import com.napnap.vo.UserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -30,6 +37,9 @@ public class PostController {
 
     @Resource
     private PostService postService;
+
+    @Resource
+    private CollectService collectService;
 
     @ApiOperation("测试")
     @GetMapping("/test")
@@ -121,6 +131,23 @@ public class PostController {
         }
         boolean flag = postService.deletePostById(postDeleteRequest);
         return ResultUtils.success(flag);
+    }
+
+    @ApiOperation("判断用户是否收藏帖子")
+    @LoginCheck
+    @PostMapping("/isCollectPost")
+    public BaseResponse<Boolean> isCollectPost(@RequestBody PostDeleteRequest postDeleteRequest, HttpServletRequest request){
+        if(postDeleteRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Collect::getUid, userId);
+        queryWrapper.eq(Collect::getCollectedId, postDeleteRequest.getPostId());
+        queryWrapper.eq(Collect::getCollectType, CollectConstant.POST);
+        Collect collect = collectService.getOne(queryWrapper);
+        return ResultUtils.success(collect != null);
     }
 
 }

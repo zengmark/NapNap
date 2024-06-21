@@ -23,11 +23,11 @@ public class MessagePoller {
 
     @Scheduled(fixedRate = 5000)
     public void checkForNewMessages() {
-        List<Message> newMessages = messageRepository.findNewMessages(lastCheckTime);
-        lastCheckTime = new Date();
-        System.out.println("轮询");
-        for (Message message : newMessages) {
-            webSocketHandler.sendMessageToAll("New message: " + message.toString());
-        }
+//        List<Message> newMessages = messageRepository.findNewMessages(lastCheckTime);
+//        lastCheckTime = new Date();
+//        System.out.println("轮询");
+//        for (Message message : newMessages) {
+//            webSocketHandler.sendMessageToAll("New message: " + message.toString());
+//        }
     }
 }

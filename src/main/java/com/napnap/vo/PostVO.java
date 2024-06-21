@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -48,6 +49,10 @@ public class PostVO implements Serializable {
      */
     private Long collectNum;
 
-    @TableField(exist = false)
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
     private static final long serialVersionUID = 1L;
 }

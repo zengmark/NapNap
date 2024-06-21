@@ -9,6 +9,7 @@ import com.napnap.common.PageRequest;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
+import com.napnap.dto.user.UserSearchRequest;
 import com.napnap.dto.user.UserUpdateRequest;
 import com.napnap.entity.User;
 import com.napnap.exception.BusinessException;
@@ -128,7 +129,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserProfile(userProfile);
 //        user.setUserPassword(encryptedPassword);
         userMapper.updateById(user);
-        return getUserVO(user);
+        userVO = getUserVO(user);
+//        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
+        return userVO;
     }
 
     /**
@@ -201,7 +204,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         List<Long> idList = followerService.listFollowerIds(userId, current, pageSize);
         // 根据 idList 查询所有粉丝用户信息返回
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        if(CollectionUtils.isNotEmpty(idList)){
+        if (CollectionUtils.isNotEmpty(idList)) {
             queryWrapper.in(User::getId, idList);
         }
         Page<User> userPage = userMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
@@ -220,6 +223,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserVO userVO = new UserVO();
         BeanUtil.copyProperties(user, userVO);
         return userVO;
+    }
+
+    /**
+     * 根据搜索条件搜索用户
+     *
+     * @param userSearchRequest
+     * @return
+     */
+    @Override
+    public Page<UserVO> listAllUserBySearch(UserSearchRequest userSearchRequest) {
+        String searchText = userSearchRequest.getSearchText();
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        if(StringUtils.isNotEmpty(searchText)){
+            queryWrapper.and(wrapper -> wrapper.like(User::getUserName, searchText).or().like(User::getUserAccount, searchText));
+        }
+        queryWrapper.orderByDesc(User::getCreateTime);
+        Page<User> userPage = userMapper.selectPage(new Page<>(userSearchRequest.getCurrent(), userSearchRequest.getPageSize()), queryWrapper);
+        List<User> userList = userPage.getRecords();
+        List<UserVO> userVoList = userList.stream().map(this::getUserVO).collect(Collectors.toList());
+        return new Page<UserVO>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal()).setRecords(userVoList);
     }
 }
 

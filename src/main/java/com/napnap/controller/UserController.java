@@ -7,12 +7,10 @@ import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
 import com.napnap.constant.UserConstant;
-import com.napnap.dto.user.UserLoginRequest;
-import com.napnap.dto.user.UserRegisterRequest;
-import com.napnap.dto.user.UserUpdatePasswordRequest;
-import com.napnap.dto.user.UserUpdateRequest;
+import com.napnap.dto.user.*;
 import com.napnap.entity.User;
 import com.napnap.exception.BusinessException;
+import com.napnap.service.FollowerService;
 import com.napnap.service.UserService;
 import com.napnap.utils.PasswordUtil;
 import com.napnap.vo.UserVO;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -34,6 +33,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FollowerService followerService;
 
     @ApiOperation(value = "测试接口", notes = "用于测试接口是否能够正常访问")
     @GetMapping("/test")
@@ -80,6 +82,17 @@ public class UserController {
         return ResultUtils.success(true);
     }
 
+    @ApiOperation("根据ID获取用户信息")
+    @PostMapping("getUserById")
+    public BaseResponse<UserVO> getUserById(@RequestBody UserGetRequest userGetRequest){
+        if(userGetRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不存在");
+        }
+        User user = userService.getById(userGetRequest.getUserId());
+        UserVO userVO = userService.getUserVO(user);
+        return ResultUtils.success(userVO);
+    }
+
     @ApiOperation(value = "获取登录用户信息", notes = "获取登录用户信息")
     @GetMapping("/getLoginUser")
     public BaseResponse<UserVO> getLoginUser(){
@@ -88,6 +101,19 @@ public class UserController {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "用户还未登录");
         }
         UserVO userVO = (UserVO) loginUser;
+        // 查询用户粉丝数和关注数与当前 session 中的用户的粉丝数和关注数是否一致，不一致，进行修改
+        List<Long> fansIdList = followerService.listFollowerIds(userVO.getId(), 0, 0);
+        List<Long> focusIdList = followerService.listFocusIds(userVO.getId(), 0, 0);
+        int fansNum = fansIdList.size();
+        int focusNum = focusIdList.size();
+        User user = userService.getById(userVO.getId());
+        if(userVO.getFansNum().intValue() == fansNum && userVO.getFocusNum().intValue() == focusNum
+        && user.getUserAvatar().equals(userVO.getUserAvatar()) && user.getUserProfile().equals(userVO.getUserProfile())
+        && user.getUserName().equals(userVO.getUserName())){
+            return ResultUtils.success(userVO);
+        }
+        userVO = userService.getUserVO(user);
+        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
         return ResultUtils.success(userVO);
     }
 
@@ -138,6 +164,16 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         Page<UserVO> userVOPage = userService.listUserFollowers(pageRequest);
+        return ResultUtils.success(userVOPage);
+    }
+
+    @ApiOperation("根据条件搜索用户")
+    @PostMapping("/listAllUserBySearch")
+    public BaseResponse<Page<UserVO>> listAllUserBySearch(@RequestBody UserSearchRequest userSearchRequest){
+        if(userSearchRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<UserVO> userVOPage = userService.listAllUserBySearch(userSearchRequest);
         return ResultUtils.success(userVOPage);
     }
 

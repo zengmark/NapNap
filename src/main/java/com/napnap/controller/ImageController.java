@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/image")
@@ -43,6 +44,7 @@ public class ImageController {
     @Value("${gitee.token}")
     private String token;
 
+    @ApiOperation("图片上传")
     @PostMapping("/upload")
     public BaseResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -71,7 +73,7 @@ public class ImageController {
         OkHttpClient client = new OkHttpClient();
         okhttp3.RequestBody body = okhttp3.RequestBody.create(jsonPayload, MediaType.get("application/json"));
         Request request = new Request.Builder()
-                .url(giteeApiUrl + "/repos/" + repoOwner + "/" + repoName + "/contents/" + file.getOriginalFilename())
+                .url(giteeApiUrl + "/repos/" + repoOwner + "/" + repoName + "/contents/" + UUID.randomUUID().getLeastSignificantBits() + file.getOriginalFilename())
                 .post(body)
                 .build();
 

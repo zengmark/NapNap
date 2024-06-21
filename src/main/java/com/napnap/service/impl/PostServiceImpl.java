@@ -141,6 +141,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     public Boolean updatePost(PostUpdateRequest postUpdateRequest) {
         Long id = postUpdateRequest.getId();
         Post post = postMapper.selectById(id);
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        if (!post.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "不是发帖人，无法修改帖子");
+        }
         if (post == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
@@ -269,7 +274,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         boolean isLike = likeService.changeLikeStatus(userId, postId);
         // 如果是点赞
         Post post = postMapper.selectById(postId);
-        if(isLike){
+        if (isLike) {
             post.setLikes(post.getLikes() + 1);
         } else {
             post.setLikes(post.getLikes() - 1);
@@ -294,7 +299,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 判断帖子是否是该用户的，否则不允许删除
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
-        if(!post.getUserId().equals(userId)){
+        if (!post.getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "用户无法删除非自己发布的帖子");
         }
         // 删除 post 表中的帖子记录

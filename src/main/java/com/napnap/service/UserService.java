@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.napnap.common.PageRequest;
 import com.napnap.dto.user.UserLoginRequest;
 import com.napnap.dto.user.UserRegisterRequest;
+import com.napnap.dto.user.UserSearchRequest;
 import com.napnap.dto.user.UserUpdateRequest;
 import com.napnap.entity.User;
 import com.napnap.vo.UserVO;
@@ -31,4 +32,6 @@ public interface UserService extends IService<User> {
     Page<UserVO> listUserFollowers(PageRequest pageRequest);
 
     UserVO getUserVO(User user);
+
+    Page<UserVO> listAllUserBySearch(UserSearchRequest userSearchRequest);
 }

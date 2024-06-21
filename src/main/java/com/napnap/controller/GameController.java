@@ -1,24 +1,31 @@
 package com.napnap.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.napnap.annotation.LoginCheck;
 import com.napnap.common.BaseResponse;
 import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
 import com.napnap.common.ResultUtils;
+import com.napnap.constant.CollectConstant;
+import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
+import com.napnap.entity.Collect;
 import com.napnap.entity.Game;
 import com.napnap.exception.BusinessException;
+import com.napnap.service.CollectService;
 import com.napnap.service.GameService;
 import com.napnap.vo.GameVO;
+import com.napnap.vo.UserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/game")
@@ -27,6 +34,9 @@ public class GameController {
 
     @Resource
     private GameService gameService;
+
+    @Resource
+    private CollectService collectService;
 
     @ApiOperation("测试")
     @GetMapping("/test")
@@ -64,6 +74,23 @@ public class GameController {
         }
         GameVO gameVO = gameService.collectGame(collectRequest);
         return ResultUtils.success(gameVO);
+    }
+
+    @ApiOperation("获取游戏是否收藏状态")
+    @LoginCheck
+    @PostMapping("/getCollectGameStatus")
+    public BaseResponse<Boolean> getCollectGameStatus(@RequestBody CollectRequest collectRequest, HttpServletRequest request){
+        if(collectRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        LambdaQueryWrapper<Collect> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Collect::getUid, userId);
+        queryWrapper.eq(Collect::getCollectedId, collectRequest.getCollectId());
+        queryWrapper.eq(Collect::getCollectType, CollectConstant.GAME);
+        Collect collect = collectService.getOne(queryWrapper);
+        return ResultUtils.success(collect != null);
     }
 
     @ApiOperation("为游戏评分")
