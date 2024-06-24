@@ -14,6 +14,7 @@ import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
+import com.napnap.dto.post.PostOtherRequest;
 import com.napnap.entity.Collect;
 import com.napnap.entity.Game;
 import com.napnap.exception.BusinessException;
@@ -89,13 +90,14 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
     /**
      * 获取用户收藏的所有游戏
      *
-     * @param pageRequest
+     * @param postOtherRequest
      * @return
      */
     @Override
-    public Page<GameVO> listAllGameByUserCollect(PageRequest pageRequest) {
-        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        Long userId = userVO.getId();
+    public Page<GameVO> listAllGameByUserCollect(PostOtherRequest postOtherRequest) {
+//        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+//        Long userId = userVO.getId();
+        Long userId = postOtherRequest.getUserId();
         // 获取收藏表中用户收集的游戏的IDList
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.eq(Collect::getUid, userId);
@@ -105,7 +107,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         // 根据 gameIdList 集合获取所有游戏
         LambdaQueryWrapper<Game> gameQueryWrapper = new LambdaQueryWrapper<>();
         gameQueryWrapper.in(Game::getId, gameIdList);
-        Page<Game> gamePage = gameMapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), gameQueryWrapper);
+        Page<Game> gamePage = gameMapper.selectPage(new Page<>(postOtherRequest.getCurrent(), postOtherRequest.getPageSize()), gameQueryWrapper);
         List<Game> gameList = gamePage.getRecords();
         List<GameVO> gameVoList = gameList.stream().map(this::getGameVO).collect(Collectors.toList());
         return new Page<GameVO>(gamePage.getCurrent(), gamePage.getSize(), gamePage.getTotal()).setRecords(gameVoList);
@@ -174,6 +176,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         String gameIcon = gameAddRequest.getGameIcon();
         List<String> tagList = gameAddRequest.getTag();
         BigDecimal gameSize = gameAddRequest.getGameSize();
+        List<String> gameUrl = gameAddRequest.getGameUrl();
         LambdaQueryWrapper<Game> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Game::getGameName, gameName);
         Game game = gameMapper.selectOne(queryWrapper);
@@ -186,6 +189,7 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         game.setGameIcon(gameIcon);
         game.setTagList(tagList);
         game.setGameSize(gameSize);
+        game.setGameUrlList(gameUrl);
         gameMapper.insert(game);
         return getGameVO(game);
     }

@@ -12,6 +12,7 @@ import com.napnap.mapper.FollowerMapper;
 import com.napnap.mapper.UserMapper;
 import com.napnap.service.FollowerService;
 import com.napnap.service.MessageService;
+import com.napnap.service.UserService;
 import com.napnap.vo.UserVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,9 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
     private UserMapper userMapper;
 
     @Resource
+    private UserService userService;
+
+    @Resource
     private MessageService messageService;
 
     /**
@@ -50,7 +54,7 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
      */
     @Transactional
     @Override
-    public boolean addFollower(long followerId) {
+    public UserVO addFollower(long followerId) {
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         LambdaQueryWrapper<Follower> followerQueryWrapper = new LambdaQueryWrapper<>();
@@ -65,15 +69,22 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
         follower.setUid(userId);
         follower.setFollowerId(followerId);
         followerMapper.insert(follower);
-        // 用户粉丝数 + 1
-        User user = userMapper.selectById(followerId);
-        if(user == null){
+        // 被关注用户的粉丝数 + 1
+        User followerUser = userMapper.selectById(followerId);
+        if(followerUser == null){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户信息不存在");
         }
-        user.setFocusNum(user.getFocusNum() + 1);
+        followerUser.setFansNum(followerUser.getFansNum() + 1);
+        userMapper.updateById(followerUser);
+        // 关注用户的关注数 + 1
+        User focusUser = userMapper.selectById(userId);
+        focusUser.setFocusNum(focusUser.getFocusNum() + 1);
+        userMapper.updateById(focusUser);
+        userVO = userService.getUserVO(focusUser);
+        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
         // 发送一条消息到消息表中
         messageService.addMessage(follower.getId(), MessageConstant.FOCUS, followerId);
-        return true;
+        return userService.getUserVO(followerUser);
     }
 
     /**
@@ -84,7 +95,7 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
      */
     @Transactional
     @Override
-    public boolean deleteFollower(long followerId) {
+    public UserVO deleteFollower(long followerId) {
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         LambdaQueryWrapper<Follower> followerQueryWrapper = new LambdaQueryWrapper<>();
@@ -96,15 +107,22 @@ public class FollowerServiceImpl extends ServiceImpl<FollowerMapper, Follower>
         }
         // 删除粉丝记录
         followerMapper.deleteById(follower);
-        // 用户粉丝数 - 1
-        User user = userMapper.selectById(followerId);
-        if(user == null){
+        // 被关注用户的粉丝数 - 1
+        User followerUser = userMapper.selectById(followerId);
+        if(followerUser == null){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户信息不存在");
         }
-        user.setFocusNum(user.getFocusNum() - 1);
+        followerUser.setFansNum(followerUser.getFansNum() - 1);
+        userMapper.updateById(followerUser);
+        // 关注用户的关注数 - 1
+        User focusUser = userMapper.selectById(userId);
+        focusUser.setFocusNum(focusUser.getFocusNum() - 1);
+        userMapper.updateById(focusUser);
+        userVO = userService.getUserVO(focusUser);
+        request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, userVO);
         // 删除消息表中的消息
         messageService.deleteMessage(follower.getId(), MessageConstant.FOCUS, followerId);
-        return true;
+        return userService.getUserVO(followerUser);
     }
 
     /**

@@ -26,20 +26,19 @@ public class GameAddRequest implements Serializable {
     private String gameIcon;
 
     /**
-     *
+     * 游戏标签
      */
     private List<String> tag;
 
     /**
      * 游戏大小
      */
-    @TableField(value = "game_size")
     private BigDecimal gameSize;
 
     /**
      * 游戏链接
      */
-//    private String gameUrl;
+    private List<String> gameUrl;
 
     private static final long serialVersionUID = 1L;
 }

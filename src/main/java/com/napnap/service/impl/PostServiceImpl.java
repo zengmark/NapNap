@@ -12,10 +12,7 @@ import com.napnap.constant.SortConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.like.LikeRequest;
-import com.napnap.dto.post.PostAddRequest;
-import com.napnap.dto.post.PostDeleteRequest;
-import com.napnap.dto.post.PostSearchRequest;
-import com.napnap.dto.post.PostUpdateRequest;
+import com.napnap.dto.post.*;
 import com.napnap.entity.Collect;
 import com.napnap.entity.Post;
 import com.napnap.exception.BusinessException;
@@ -88,16 +85,18 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     /**
      * 获取该用户的所有帖子
      *
-     * @param pageRequest
+     * @param postOtherRequest
      * @return
      */
     @Override
-    public Page<PostVO> listAllPostByUser(PageRequest pageRequest) {
-        UserVO loginUser = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        Long userId = loginUser.getId();
+    public Page<PostVO> listAllPostByUser(PostOtherRequest postOtherRequest) {
+//        UserVO loginUser = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+//        Long userId = loginUser.getId();
+        Long userId = postOtherRequest.getUserId();
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getUserId, userId);
-        Page<Post> postPage = postMapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), queryWrapper);
+        queryWrapper.orderByDesc(Post::getCreateTime);
+        Page<Post> postPage = postMapper.selectPage(new Page<>(postOtherRequest.getCurrent(), postOtherRequest.getPageSize()), queryWrapper);
         List<PostVO> postVoList = postPage.getRecords().stream().map(this::getPostVO).collect(Collectors.toList());
         return new Page<PostVO>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal()).setRecords(postVoList);
     }
@@ -105,13 +104,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     /**
      * 获取用户收藏的所有帖子
      *
-     * @param pageRequest
+     * @param postOtherRequest
      * @return
      */
     @Override
-    public Page<PostVO> listAllPostByUserCollect(PageRequest pageRequest) {
-        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        Long userId = userVO.getId();
+    public Page<PostVO> listAllPostByUserCollect(PostOtherRequest postOtherRequest) {
+//        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+//        Long userId = userVO.getId();
+        Long userId = postOtherRequest.getUserId();
         // 从收藏表中查询出来用户收藏帖子的所有记录
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.eq(Collect::getUid, userId);
@@ -125,7 +125,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 根据记录的帖子ID，反查帖子表里面的数据
         LambdaQueryWrapper<Post> postQueryWrapper = new LambdaQueryWrapper<>();
         postQueryWrapper.in(Post::getId, collectIdLIst);
-        Page<Post> postPage = postMapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), postQueryWrapper);
+        postQueryWrapper.orderByDesc(Post::getCreateTime);
+        Page<Post> postPage = postMapper.selectPage(new Page<>(postOtherRequest.getCurrent(), postOtherRequest.getPageSize()), postQueryWrapper);
         List<Post> postList = postPage.getRecords();
         List<PostVO> postVoList = postList.stream().map(this::getPostVO).collect(Collectors.toList());
         return new Page<PostVO>(postPage.getCurrent(), postPage.getSize(), postPage.getTotal()).setRecords(postVoList);

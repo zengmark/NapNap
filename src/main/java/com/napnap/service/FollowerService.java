@@ -2,6 +2,7 @@ package com.napnap.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.napnap.entity.Follower;
+import com.napnap.vo.UserVO;
 
 import java.util.List;
 
@@ -11,9 +12,9 @@ import java.util.List;
 * @createDate 2024-06-09 21:56:28
 */
 public interface FollowerService extends IService<Follower> {
-    boolean addFollower(long followerId);
+    UserVO addFollower(long followerId);
 
-    boolean deleteFollower(long followerId);
+    UserVO deleteFollower(long followerId);
 
     List<Long> listFollowerIds(long userId, int current, int pageSize);
 

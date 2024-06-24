@@ -16,9 +16,10 @@ import java.util.List;
 
 /**
  * 游戏表
+ *
  * @TableName tb_game
  */
-@TableName(value ="tb_game")
+@TableName(value = "tb_game")
 @Data
 public class Game implements Serializable {
     /**
@@ -111,18 +112,36 @@ public class Game implements Serializable {
     // JSON utility methods
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public List<String> getTagList(){
+    public List<String> getTagList() {
         try {
-            return objectMapper.readValue(tag, new TypeReference<List<String>>() {});
+            return objectMapper.readValue(tag, new TypeReference<List<String>>() {
+            });
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public void setTagList(List<String> tagList){
+    public void setTagList(List<String> tagList) {
         try {
             this.tag = objectMapper.writeValueAsString(tagList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getGameUrlList() {
+        try {
+            return objectMapper.readValue(gameUrl, new TypeReference<List<String>>() {});
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void setGameUrlList(List<String> gameUrlList){
+        try {
+            this.gameUrl = objectMapper.writeValueAsString(gameUrlList);
         } catch (IOException e){
             e.printStackTrace();
         }

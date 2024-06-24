@@ -7,6 +7,7 @@ import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
+import com.napnap.dto.post.PostOtherRequest;
 import com.napnap.entity.Game;
 import com.napnap.vo.GameVO;
 
@@ -19,7 +20,7 @@ public interface GameService extends IService<Game> {
 
     Page<GameVO> listAllGameBySearch(GameSearchRequest gameSearchRequest);
 
-    Page<GameVO> listAllGameByUserCollect(PageRequest pageRequest);
+    Page<GameVO> listAllGameByUserCollect(PostOtherRequest postOtherRequest);
 
     GameVO collectGame(CollectRequest collectRequest);
 

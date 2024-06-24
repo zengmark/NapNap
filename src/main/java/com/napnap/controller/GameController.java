@@ -13,6 +13,7 @@ import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.game.GameAddRequest;
 import com.napnap.dto.game.GameScoreRequest;
 import com.napnap.dto.game.GameSearchRequest;
+import com.napnap.dto.post.PostOtherRequest;
 import com.napnap.entity.Collect;
 import com.napnap.entity.Game;
 import com.napnap.exception.BusinessException;
@@ -57,11 +58,11 @@ public class GameController {
     @ApiOperation("获取用户收藏的游戏列表")
     @LoginCheck
     @PostMapping("/listAllGameByUserCollect")
-    public BaseResponse<Page<GameVO>> listAllGameByUserCollect(@RequestBody PageRequest pageRequest){
-        if(pageRequest == null){
+    public BaseResponse<Page<GameVO>> listAllGameByUserCollect(@RequestBody PostOtherRequest postOtherRequest){
+        if(postOtherRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
-        Page<GameVO> gameVOPage = gameService.listAllGameByUserCollect(pageRequest);
+        Page<GameVO> gameVOPage = gameService.listAllGameByUserCollect(postOtherRequest);
         return ResultUtils.success(gameVOPage);
     }
 

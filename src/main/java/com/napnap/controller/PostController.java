@@ -11,13 +11,12 @@ import com.napnap.constant.CollectConstant;
 import com.napnap.constant.UserConstant;
 import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.like.LikeRequest;
-import com.napnap.dto.post.PostAddRequest;
-import com.napnap.dto.post.PostDeleteRequest;
-import com.napnap.dto.post.PostSearchRequest;
-import com.napnap.dto.post.PostUpdateRequest;
+import com.napnap.dto.post.*;
 import com.napnap.entity.Collect;
+import com.napnap.entity.Like;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.CollectService;
+import com.napnap.service.LikeService;
 import com.napnap.service.PostService;
 import com.napnap.vo.PostVO;
 import com.napnap.vo.UserVO;
@@ -40,6 +39,9 @@ public class PostController {
 
     @Resource
     private CollectService collectService;
+
+    @Resource
+    private LikeService likeService;
 
     @ApiOperation("测试")
     @GetMapping("/test")
@@ -67,8 +69,11 @@ public class PostController {
     @ApiOperation("获取该用户发过的所有帖子")
     @LoginCheck
     @PostMapping("/listAllPostByUser")
-    public BaseResponse<Page<PostVO>> listAllPostByUser(@RequestBody PageRequest pageRequest) {
-        Page<PostVO> postPage = postService.listAllPostByUser(pageRequest);
+    public BaseResponse<Page<PostVO>> listAllPostByUser(@RequestBody PostOtherRequest postOtherRequest) {
+        if(postOtherRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<PostVO> postPage = postService.listAllPostByUser(postOtherRequest);
         return ResultUtils.success(postPage);
     }
 
@@ -85,8 +90,11 @@ public class PostController {
     @ApiOperation("获取用户收藏的所有帖子")
     @LoginCheck
     @PostMapping("/listAllPostByUserCollect")
-    public BaseResponse<Page<PostVO>> listAllPostByUserCollect(@RequestBody PageRequest pageRequest){
-        Page<PostVO> postVOPage = postService.listAllPostByUserCollect(pageRequest);
+    public BaseResponse<Page<PostVO>> listAllPostByUserCollect(@RequestBody PostOtherRequest postOtherRequest){
+        if(postOtherRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Page<PostVO> postVOPage = postService.listAllPostByUserCollect(postOtherRequest);
         return ResultUtils.success(postVOPage);
     }
 
@@ -95,10 +103,27 @@ public class PostController {
     @PostMapping("/collectPost")
     public BaseResponse<PostVO> collectPost(@RequestBody CollectRequest collectRequest) {
         if (collectRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不存在");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         PostVO postVO = postService.collectPost(collectRequest);
         return ResultUtils.success(postVO);
+    }
+
+    @ApiOperation("判断用户是否点赞帖子")
+    @LoginCheck
+    @PostMapping("/isLikePost")
+    public BaseResponse<Boolean> isLikePost(@RequestBody PostDeleteRequest postDeleteRequest, HttpServletRequest request){
+        if(postDeleteRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Long userId = userVO.getId();
+        Long postId = postDeleteRequest.getPostId();
+        LambdaQueryWrapper<Like> queryWrapper = new LambdaQueryWrapper<Like>();
+        queryWrapper.eq(Like::getUid, userId);
+        queryWrapper.eq(Like::getPostId, postId);
+        Like like = likeService.getOne(queryWrapper);
+        return ResultUtils.success(like != null);
     }
 
     @ApiOperation("点赞/取消点赞帖子")
@@ -106,7 +131,7 @@ public class PostController {
     @PostMapping("/likePost")
     public BaseResponse<PostVO> likePost(@RequestBody LikeRequest likeRequest){
         if(likeRequest == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不存在");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         PostVO postVO = postService.likePost(likeRequest);
         return ResultUtils.success(postVO);

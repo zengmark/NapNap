@@ -26,7 +26,7 @@ public class CommentVO implements Serializable {
     /**
      * 评论类型，0 是评论帖子，1 是评论评论
      */
-    private Integer type;
+    private Integer commentType;
 
     /**
      * 评论内容

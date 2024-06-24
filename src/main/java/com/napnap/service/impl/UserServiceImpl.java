@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -52,31 +53,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @return
      */
     @Override
-    public UserVO register(UserRegisterRequest userRegisterRequest) {
+    public String register(UserRegisterRequest userRegisterRequest) {
         // 判断用户是否存在，如果存在则抛出异常
         String userName = userRegisterRequest.getUserName();
-        String userAccount = userRegisterRequest.getUserAccount();
+//        String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
-        if (userAccount.length() > 16 || userAccount.length() < 6) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号长度必须在 6 - 16 个字符之间");
+//        if (userAccount.length() > 16 || userAccount.length() < 6) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号长度必须在 6 - 16 个字符之间");
+//        }
+//        if (userPassword.length() > 16 || userPassword.length() < 6) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码长度必须在 6 - 16 个字符之间");
+//        }
+        // 生成账号
+        String userAccount = null;
+        Random random = new Random();
+        while(true){
+            int accountNumber = 100000 + random.nextInt(900000);
+            userAccount = String.valueOf(accountNumber);
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(User::getUserAccount, userAccount);
+            User user = userMapper.selectOne(queryWrapper);
+            if(user == null){
+                break;
+            }
         }
-        if (userPassword.length() > 16 || userPassword.length() < 6) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码长度必须在 6 - 16 个字符之间");
-        }
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(StringUtils.isNotEmpty(userAccount), User::getUserAccount, userAccount);
-        User user = userMapper.selectOne(queryWrapper);
-        if (user != null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户已存在");
-        }
+//        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(StringUtils.isNotEmpty(userAccount), User::getUserAccount, userAccount);
+//        User user = userMapper.selectOne(queryWrapper);
+//        if (user != null) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户已存在");
+//        }
         // 用户不存在，向数据库中插入数据，同时要进行 Base64 编码存储密码
         String encryptedPassword = PasswordUtil.encryptPassword(userPassword);
-        user = new User();
+        User user = new User();
         user.setUserName(userName);
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptedPassword);
         userMapper.insert(user);
-        return getUserVO(user);
+        return userAccount;
     }
 
     /**

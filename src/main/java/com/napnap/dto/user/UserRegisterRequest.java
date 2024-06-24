@@ -9,7 +9,7 @@ public class UserRegisterRequest implements Serializable {
 
     private String userName;
 
-    private String userAccount;
+//    private String userAccount;
 
     private String userPassword;
 

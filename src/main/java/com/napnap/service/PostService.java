@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.napnap.common.PageRequest;
 import com.napnap.dto.collect.CollectRequest;
 import com.napnap.dto.like.LikeRequest;
-import com.napnap.dto.post.PostAddRequest;
-import com.napnap.dto.post.PostDeleteRequest;
-import com.napnap.dto.post.PostSearchRequest;
-import com.napnap.dto.post.PostUpdateRequest;
+import com.napnap.dto.post.*;
 import com.napnap.entity.Post;
 import com.napnap.vo.PostVO;
 
@@ -21,7 +18,7 @@ public interface PostService extends IService<Post> {
 
     boolean addPost(PostAddRequest postAddRequest);
 
-    Page<PostVO> listAllPostByUser(PageRequest pageRequest);
+    Page<PostVO> listAllPostByUser(PostOtherRequest postOtherRequest);
 
     Boolean updatePost(PostUpdateRequest postUpdateRequest);
 
@@ -37,6 +34,6 @@ public interface PostService extends IService<Post> {
 
     boolean deletePostById(PostDeleteRequest postDeleteRequest);
 
-    Page<PostVO> listAllPostByUserCollect(PageRequest pageRequest);
+    Page<PostVO> listAllPostByUserCollect(PostOtherRequest postOtherRequest);
 
 }

@@ -17,7 +17,7 @@ import com.napnap.vo.UserVO;
 */
 public interface UserService extends IService<User> {
 
-    UserVO register(UserRegisterRequest userRegisterRequest);
+    String register(UserRegisterRequest userRegisterRequest);
 
     UserVO login(UserLoginRequest userLoginRequest);
 

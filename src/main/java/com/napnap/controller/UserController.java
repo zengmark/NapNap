@@ -45,19 +45,22 @@ public class UserController {
 
     @ApiOperation(value = "用户注册", notes = "注册一个新用户")
     @PostMapping("/register")
-    public BaseResponse<UserVO> register(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<String> register(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入参数为空");
         }
         String userName = userRegisterRequest.getUserName();
-        String userAccount = userRegisterRequest.getUserAccount();
+//        String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
-        if (StringUtils.isAnyEmpty(userName, userAccount, userPassword)) {
+        if (StringUtils.isAnyEmpty(userName, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名/用户账号/用户密码不能为空");
         }
-        UserVO userVO = userService.register(userRegisterRequest);
-        return ResultUtils.success(userVO);
+//        UserVO userVO = userService.register(userRegisterRequest);
+        String userAccount = userService.register(userRegisterRequest);
+        return ResultUtils.success(userAccount);
     }
+
+
 
     @ApiOperation(value = "用户登录", notes = "用户使用账号和密码登录")
     @PostMapping("/login")
@@ -76,14 +79,14 @@ public class UserController {
 
     @ApiOperation("退出登录")
     @LoginCheck
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public BaseResponse<Boolean> logout(){
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return ResultUtils.success(true);
     }
 
     @ApiOperation("根据ID获取用户信息")
-    @PostMapping("getUserById")
+    @PostMapping("/getUserById")
     public BaseResponse<UserVO> getUserById(@RequestBody UserGetRequest userGetRequest){
         if(userGetRequest == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不存在");
