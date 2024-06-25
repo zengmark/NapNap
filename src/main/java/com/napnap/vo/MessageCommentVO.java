@@ -1,11 +1,21 @@
 package com.napnap.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 public class MessageCommentVO extends UserVO implements Serializable {
+
+    /**
+     * 消息ID
+     */
+    private Long messageId;
 
     /**
      * 评论ID
@@ -26,6 +36,11 @@ public class MessageCommentVO extends UserVO implements Serializable {
      * 被评论的帖子的标题或者被评论的评论的内容
      */
     private String commentParentContent;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
 
     private static final long serialVersionUID = 1L;
 }

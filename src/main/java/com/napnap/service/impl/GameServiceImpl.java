@@ -104,6 +104,9 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game>
         collectQueryWrapper.eq(Collect::getCollectType, CollectConstant.GAME);
         List<Collect> collectList = collectService.list(collectQueryWrapper);
         List<Long> gameIdList = collectList.stream().map(Collect::getCollectedId).collect(Collectors.toList());
+        if (gameIdList.isEmpty()) {
+            return new Page<>();
+        }
         // 根据 gameIdList 集合获取所有游戏
         LambdaQueryWrapper<Game> gameQueryWrapper = new LambdaQueryWrapper<>();
         gameQueryWrapper.in(Game::getId, gameIdList);

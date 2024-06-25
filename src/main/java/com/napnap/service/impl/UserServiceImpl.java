@@ -193,6 +193,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         List<Long> idList = followerService.listFocusIds(userId, current, pageSize);
+        if(idList.isEmpty()){
+            return new Page<>();
+        }
         // 根据 IdList 查询所有关注用户信息返回
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         if (CollectionUtils.isNotEmpty(idList)) {

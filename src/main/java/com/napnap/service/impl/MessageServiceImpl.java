@@ -9,14 +9,12 @@ import com.napnap.common.PageRequest;
 import com.napnap.constant.CommentConstant;
 import com.napnap.constant.MessageConstant;
 import com.napnap.constant.UserConstant;
+import com.napnap.dto.message.MessageRequest;
 import com.napnap.entity.*;
 import com.napnap.exception.BusinessException;
 import com.napnap.mapper.MessageMapper;
 import com.napnap.service.*;
-import com.napnap.vo.MessageCollectVO;
-import com.napnap.vo.MessageCommentVO;
-import com.napnap.vo.MessageLikeVO;
-import com.napnap.vo.UserVO;
+import com.napnap.vo.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -151,49 +150,66 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
     /**
      * 获取关注列表的未读消息
      *
-     * @param pageRequest
+     * @param messageRequest
      * @return
      */
     @Override
-    public Page<UserVO> listMessageByFocus(PageRequest pageRequest) {
+    public Page<MessageUserVO> listMessageByFocus(MessageRequest messageRequest) {
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是粉丝表的主键ID
-        List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.FOCUS);
+//        List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.FOCUS);
+        List<Message> messageList = getSourceIdList(userId, MessageConstant.FOCUS, messageRequest.getIsVisible());
+        if (messageList.isEmpty()) {
+            return new Page<>();
+        }
+        List<Long> sourceIdList = messageList.stream().map(Message::getSourceId).collect(Collectors.toList());
+        Map<Long, Long> messageMap = messageList.stream().collect(Collectors.toMap(Message::getSourceId, Message::getId));
         // 将消息设置为 INVISIBLE
-        setMessageInVisible(sourceIdList);
+//        setMessageInVisible(sourceIdList);
         // 查询用户ID
         LambdaQueryWrapper<Follower> followerQueryWrapper = new LambdaQueryWrapper<>();
         followerQueryWrapper.in(Follower::getId, sourceIdList);
-        Page<Follower> followerPage = followerService.page(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), followerQueryWrapper);
+        followerQueryWrapper.orderByDesc(Follower::getCreateTime);
+        Page<Follower> followerPage = followerService.page(new Page<>(messageRequest.getCurrent(), messageRequest.getPageSize()), followerQueryWrapper);
         List<Follower> followerList = followerPage.getRecords();
-        List<UserVO> userVOList = followerList.stream().map(follower -> {
+        List<MessageUserVO> userVOList = followerList.stream().map(follower -> {
+            MessageUserVO messageUserVO = new MessageUserVO();
             Long uId = follower.getUid();
             // 获取到关注者，将其封装为一个UserVO对象
             User user = userService.getById(uId);
-            return userService.getUserVO(user);
+            UserVO followerUserVO = userService.getUserVO(user);
+            BeanUtil.copyProperties(followerUserVO, messageUserVO);
+            messageUserVO.setMessageId(messageMap.get(follower.getId()));
+            messageUserVO.setCreateTime(follower.getCreateTime());
+            return messageUserVO;
         }).collect(Collectors.toList());
-        return new Page<UserVO>(followerPage.getCurrent(), followerPage.getSize(), followerPage.getTotal()).setRecords(userVOList);
+        return new Page<MessageUserVO>(followerPage.getCurrent(), followerPage.getSize(), followerPage.getTotal()).setRecords(userVOList);
     }
 
     /**
      * 获取点赞列表的未读消息
      *
-     * @param pageRequest
+     * @param messageRequest
      * @return
      */
     @Override
-    public Page<MessageLikeVO> listMessageByLike(PageRequest pageRequest) {
+    public Page<MessageLikeVO> listMessageByLike(MessageRequest messageRequest) {
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是点赞表的主键ID
-        List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.LIKE);
+        List<Message> messageList = getSourceIdList(userId, MessageConstant.LIKE, messageRequest.getIsVisible());
+        if (messageList.isEmpty()) {
+            return new Page<>();
+        }
+        List<Long> sourceIdList = messageList.stream().map(Message::getSourceId).collect(Collectors.toList());
+        Map<Long, Long> messageMap = messageList.stream().collect(Collectors.toMap(Message::getSourceId, Message::getId));
         // 将消息设置为 INVISIBLE
-        setMessageInVisible(sourceIdList);
+//        setMessageInVisible(sourceIdList);
         // 获取点赞列表的ID
         LambdaQueryWrapper<Like> likeQueryWrapper = new LambdaQueryWrapper<>();
         likeQueryWrapper.in(Like::getId, sourceIdList);
-        Page<Like> likePage = likeService.page(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), likeQueryWrapper);
+        Page<Like> likePage = likeService.page(new Page<>(messageRequest.getCurrent(), messageRequest.getPageSize()), likeQueryWrapper);
         List<Like> likeList = likePage.getRecords();
 //        List<Like> likeList = likeService.list(likeQueryWrapper);
         // 根据点赞表的信息，拿到对应的帖子信息并封装成 MessageLikeVO
@@ -209,6 +225,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             BeanUtil.copyProperties(userVOInfo, messageLikeVO);
             messageLikeVO.setPostId(postId);
             messageLikeVO.setPostTitle(post.getTitle());
+            messageLikeVO.setMessageId(messageMap.get(like.getId()));
+            messageLikeVO.setCreateTime(like.getCreateTime());
             return messageLikeVO;
         }).collect(Collectors.toList());
         return new Page<MessageLikeVO>(likePage.getCurrent(), likePage.getSize(), likePage.getTotal()).setRecords(messageLikeVOList);
@@ -217,21 +235,26 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
     /**
      * 获取收藏列表的未读消息
      *
-     * @param pageRequest
+     * @param messageRequest
      * @return
      */
     @Override
-    public Page<MessageCollectVO> listMessageByCollect(PageRequest pageRequest) {
+    public Page<MessageCollectVO> listMessageByCollect(MessageRequest messageRequest) {
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是收藏表的主键ID
-        List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.COLLECT);
+        List<Message> messageList = getSourceIdList(userId, MessageConstant.COLLECT, messageRequest.getIsVisible());
+        if (messageList.isEmpty()) {
+            return new Page<>();
+        }
+        List<Long> sourceIdList = messageList.stream().map(Message::getSourceId).collect(Collectors.toList());
+        Map<Long, Long> messageMap = messageList.stream().collect(Collectors.toMap(Message::getSourceId, Message::getId));
         // 将消息设置为 INVISIBLE
-        setMessageInVisible(sourceIdList);
+//        setMessageInVisible(sourceIdList);
         // 查询用户ID
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.in(Collect::getId, sourceIdList);
-        Page<Collect> collectPage = collectService.page(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), collectQueryWrapper);
+        Page<Collect> collectPage = collectService.page(new Page<>(messageRequest.getCurrent(), messageRequest.getPageSize()), collectQueryWrapper);
         List<Collect> collectList = collectPage.getRecords();
         List<MessageCollectVO> messageLikeVOList = collectList.stream().map(collect -> {
             MessageCollectVO messageCollectVO = new MessageCollectVO();
@@ -245,6 +268,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             BeanUtil.copyProperties(userVoInfo, messageCollectVO);
             messageCollectVO.setPostId(collectedId);
             messageCollectVO.setPostTitle(post.getTitle());
+            messageCollectVO.setMessageId(messageMap.get(collect.getId()));
+            messageCollectVO.setCreateTime(collect.getCreateTime());
             return messageCollectVO;
         }).collect(Collectors.toList());
         return new Page<MessageCollectVO>(collectPage.getCurrent(), collectPage.getSize(), collectPage.getTotal()).setRecords(messageLikeVOList);
@@ -253,21 +278,26 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
     /**
      * 获取评论列表的未读消息
      *
-     * @param pageRequest
+     * @param messageRequest
      * @return
      */
     @Override
-    public Page<MessageCommentVO> listMessageByComment(PageRequest pageRequest) {
+    public Page<MessageCommentVO> listMessageByComment(MessageRequest messageRequest) {
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         // 获取消息来源ID，这里的消息来源ID就是评论表的主键ID
-        List<Long> sourceIdList = getSourceIdList(userId, MessageConstant.COMMENT);
+        List<Message> messageList = getSourceIdList(userId, MessageConstant.COMMENT, messageRequest.getIsVisible());
+        if (messageList.isEmpty()) {
+            return new Page<>();
+        }
+        List<Long> sourceIdList = messageList.stream().map(Message::getSourceId).collect(Collectors.toList());
+        Map<Long, Long> messageMap = messageList.stream().collect(Collectors.toMap(Message::getSourceId, Message::getId));
         // 将消息设置为 INVISIBLE
-        setMessageInVisible(sourceIdList);
+//        setMessageInVisible(sourceIdList);
         // 查询需要获取的评论
         LambdaQueryWrapper<Comment> commentQueryWrapper = new LambdaQueryWrapper<>();
         commentQueryWrapper.in(Comment::getId, sourceIdList);
-        Page<Comment> commentPage = commentService.page(new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize()), commentQueryWrapper);
+        Page<Comment> commentPage = commentService.page(new Page<>(messageRequest.getCurrent(), messageRequest.getPageSize()), commentQueryWrapper);
         List<Comment> commentList = commentPage.getRecords();
         List<MessageCommentVO> messageCommentVOList = commentList.stream().map(comment -> {
             MessageCommentVO messageCommentVO = new MessageCommentVO();
@@ -292,6 +322,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             messageCommentVO.setCommentParentId(parentId);
             messageCommentVO.setCommentId(comment.getId());
             messageCommentVO.setCommentParentContent(contentBeComment);
+            messageCommentVO.setMessageId(messageMap.get(comment.getId()));
+            messageCommentVO.setCreateTime(comment.getCreateTime());
             return messageCommentVO;
         }).collect(Collectors.toList());
         return new Page<MessageCommentVO>(commentPage.getCurrent(), commentPage.getSize(), commentPage.getTotal()).setRecords(messageCommentVOList);
@@ -302,7 +334,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
      *
      * @param sourceIdList
      */
-    private void setMessageInVisible(List<Long> sourceIdList) {
+    public void setMessageInVisible(List<Long> sourceIdList) {
         List<Message> messageList = messageMapper.selectBatchIds(sourceIdList);
         for (Message message : messageList) {
             message.setVisible(MessageConstant.INVISIBLE);
@@ -314,17 +346,22 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
      * 获取各个种类的消息来源ID集合
      *
      * @param userId
-     * @param like
+     * @param type
      * @return
      */
     @NotNull
-    private List<Long> getSourceIdList(Long userId, Integer like) {
+    private List<Message> getSourceIdList(Long userId, Integer type, Integer visible) {
         LambdaQueryWrapper<Message> messageQueryWrapper = new LambdaQueryWrapper<>();
         messageQueryWrapper.eq(Message::getUid, userId);
-        messageQueryWrapper.eq(Message::getMessageType, like);
-        messageQueryWrapper.eq(Message::getVisible, MessageConstant.VISIBLE);
-        List<Message> messageList = messageMapper.selectList(messageQueryWrapper);
-        return messageList.stream().map(Message::getSourceId).collect(Collectors.toList());
+        messageQueryWrapper.eq(Message::getMessageType, type);
+        if (MessageConstant.VISIBLE.equals(visible)) {
+            messageQueryWrapper.eq(Message::getVisible, visible);
+        } else if (MessageConstant.INVISIBLE.equals(visible)) {
+            messageQueryWrapper.eq(Message::getVisible, visible);
+        }
+//        messageQueryWrapper.eq(Message::getVisible, MessageConstant.VISIBLE);
+        return messageMapper.selectList(messageQueryWrapper);
+//        return messageList.stream().map(Message::getSourceId).collect(Collectors.toList());
     }
 }
 

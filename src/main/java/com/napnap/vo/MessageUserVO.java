@@ -6,22 +6,12 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class MessageLikeVO extends UserVO implements Serializable {
+public class MessageUserVO extends UserVO implements Serializable {
 
     /**
      * 消息ID
      */
     private Long messageId;
-
-    /**
-     * 帖子ID
-     */
-    private Long postId;
-
-    /**
-     * 帖子标题
-     */
-    private String postTitle;
 
     /**
      * 创建时间

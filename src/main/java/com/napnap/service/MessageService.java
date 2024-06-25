@@ -3,11 +3,9 @@ package com.napnap.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.napnap.common.PageRequest;
+import com.napnap.dto.message.MessageRequest;
 import com.napnap.entity.Message;
-import com.napnap.vo.MessageCollectVO;
-import com.napnap.vo.MessageCommentVO;
-import com.napnap.vo.MessageLikeVO;
-import com.napnap.vo.UserVO;
+import com.napnap.vo.*;
 
 import java.util.List;
 
@@ -23,11 +21,13 @@ public interface MessageService extends IService<Message> {
 
     List<Long> listMessageCount();
 
-    Page<UserVO> listMessageByFocus(PageRequest pageRequest);
+    Page<MessageUserVO> listMessageByFocus(MessageRequest messageRequest);
 
-    Page<MessageLikeVO> listMessageByLike(PageRequest pageRequest);
+    Page<MessageLikeVO> listMessageByLike(MessageRequest messageRequest);
 
-    Page<MessageCollectVO> listMessageByCollect(PageRequest pageRequest);
+    Page<MessageCollectVO> listMessageByCollect(MessageRequest messageRequest);
 
-    Page<MessageCommentVO> listMessageByComment(PageRequest pageRequest);
+    Page<MessageCommentVO> listMessageByComment(MessageRequest messageRequest);
+
+    void setMessageInVisible(List<Long> sourceIdList);
 }
