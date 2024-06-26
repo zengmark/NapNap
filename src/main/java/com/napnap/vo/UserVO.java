@@ -1,5 +1,6 @@
 package com.napnap.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,6 +17,11 @@ public class UserVO implements Serializable {
      * 用户名
      */
     private String userName;
+
+    /**
+     * 用户账号
+     */
+    private String userAccount;
 
     /**
      * 用户头像

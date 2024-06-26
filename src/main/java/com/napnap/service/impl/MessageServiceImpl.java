@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.napnap.common.ErrorCode;
 import com.napnap.common.PageRequest;
+import com.napnap.constant.CollectConstant;
 import com.napnap.constant.CommentConstant;
 import com.napnap.constant.MessageConstant;
 import com.napnap.constant.UserConstant;
@@ -254,6 +255,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
         // 查询用户ID
         LambdaQueryWrapper<Collect> collectQueryWrapper = new LambdaQueryWrapper<>();
         collectQueryWrapper.in(Collect::getId, sourceIdList);
+        collectQueryWrapper.eq(Collect::getCollectType, CollectConstant.POST);
         Page<Collect> collectPage = collectService.page(new Page<>(messageRequest.getCurrent(), messageRequest.getPageSize()), collectQueryWrapper);
         List<Collect> collectList = collectPage.getRecords();
         List<MessageCollectVO> messageLikeVOList = collectList.stream().map(collect -> {

@@ -78,7 +78,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         comment.setContent(content);
         comment.setPictureList(picture);
         commentMapper.insert(comment);
-        // 消息表插入一条消息
         // 查找被评论的用户的ID
         Long followerId = null;
         if (CommentConstant.POST.equals(type)) {
@@ -88,6 +87,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
             Comment commentParent = commentMapper.selectById(parentId);
             followerId = commentParent.getUid();
         }
+        // 消息表插入一条消息
         messageService.addMessage(comment.getId(), MessageConstant.COMMENT, followerId);
         return true;
     }

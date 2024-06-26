@@ -36,4 +36,6 @@ public interface PostService extends IService<Post> {
 
     Page<PostVO> listAllPostByUserCollect(PostOtherRequest postOtherRequest);
 
+    PostVO getPostVO(Post post);
+
 }

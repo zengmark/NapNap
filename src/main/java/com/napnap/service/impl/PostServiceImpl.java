@@ -320,7 +320,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
      * @param post
      * @return
      */
-    private PostVO getPostVO(Post post) {
+    public PostVO getPostVO(Post post) {
         PostVO postVO = new PostVO();
         BeanUtil.copyProperties(post, postVO);
         postVO.setPictures(post.getPictureList());

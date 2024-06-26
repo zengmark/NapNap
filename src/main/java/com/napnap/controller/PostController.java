@@ -14,6 +14,7 @@ import com.napnap.dto.like.LikeRequest;
 import com.napnap.dto.post.*;
 import com.napnap.entity.Collect;
 import com.napnap.entity.Like;
+import com.napnap.entity.Post;
 import com.napnap.exception.BusinessException;
 import com.napnap.service.CollectService;
 import com.napnap.service.LikeService;
@@ -47,6 +48,17 @@ public class PostController {
     @GetMapping("/test")
     public String test() {
         return "test";
+    }
+
+    @ApiOperation("根据ID获取帖子")
+    @PostMapping("/getPostById")
+    public BaseResponse<PostVO> getPostById(@RequestBody PostDeleteRequest postDeleteRequest){
+        if(postDeleteRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        Post post = postService.getById(postDeleteRequest.getPostId());
+        PostVO postVO = postService.getPostVO(post);
+        return ResultUtils.success(postVO);
     }
 
     @ApiOperation("添加帖子")

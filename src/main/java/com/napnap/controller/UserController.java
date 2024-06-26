@@ -53,7 +53,7 @@ public class UserController {
 //        String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         if (StringUtils.isAnyEmpty(userName, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名/用户账号/用户密码不能为空");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名/用户密码不能为空");
         }
 //        UserVO userVO = userService.register(userRegisterRequest);
         String userAccount = userService.register(userRegisterRequest);
@@ -61,16 +61,15 @@ public class UserController {
     }
 
 
-
     @ApiOperation(value = "用户登录", notes = "用户使用账号和密码登录")
     @PostMapping("/login")
-    public BaseResponse<UserVO> login(@RequestBody UserLoginRequest userLoginRequest){
-        if(userLoginRequest == null){
+    public BaseResponse<UserVO> login(@RequestBody UserLoginRequest userLoginRequest) {
+        if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入的参数为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        if(StringUtils.isAnyEmpty(userAccount, userPassword)){
+        if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号/用户密码不能为空");
         }
         UserVO userVO = userService.login(userLoginRequest);
@@ -80,15 +79,15 @@ public class UserController {
     @ApiOperation("退出登录")
     @LoginCheck
     @GetMapping("/logout")
-    public BaseResponse<Boolean> logout(){
+    public BaseResponse<Boolean> logout() {
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return ResultUtils.success(true);
     }
 
     @ApiOperation("根据ID获取用户信息")
     @PostMapping("/getUserById")
-    public BaseResponse<UserVO> getUserById(@RequestBody UserGetRequest userGetRequest){
-        if(userGetRequest == null){
+    public BaseResponse<UserVO> getUserById(@RequestBody UserGetRequest userGetRequest) {
+        if (userGetRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不存在");
         }
         User user = userService.getById(userGetRequest.getUserId());
@@ -98,9 +97,9 @@ public class UserController {
 
     @ApiOperation(value = "获取登录用户信息", notes = "获取登录用户信息")
     @GetMapping("/getLoginUser")
-    public BaseResponse<UserVO> getLoginUser(){
+    public BaseResponse<UserVO> getLoginUser() {
         Object loginUser = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if(loginUser == null){
+        if (loginUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "用户还未登录");
         }
         UserVO userVO = (UserVO) loginUser;
@@ -110,9 +109,9 @@ public class UserController {
         int fansNum = fansIdList.size();
         int focusNum = focusIdList.size();
         User user = userService.getById(userVO.getId());
-        if(userVO.getFansNum().intValue() == fansNum && userVO.getFocusNum().intValue() == focusNum
-        && user.getUserAvatar().equals(userVO.getUserAvatar()) && user.getUserProfile().equals(userVO.getUserProfile())
-        && user.getUserName().equals(userVO.getUserName())){
+        if (userVO.getFansNum().intValue() == fansNum && userVO.getFocusNum().intValue() == focusNum
+                && user.getUserAvatar().equals(userVO.getUserAvatar()) && user.getUserProfile().equals(userVO.getUserProfile())
+                && user.getUserName().equals(userVO.getUserName())) {
             return ResultUtils.success(userVO);
         }
         userVO = userService.getUserVO(user);
@@ -123,8 +122,8 @@ public class UserController {
     @ApiOperation(value = "更新用户信息", notes = "更新用户信息")
     @LoginCheck
     @PutMapping("/updateUserInfo")
-    public BaseResponse<UserVO> updateUserInfo(@RequestBody UserUpdateRequest userUpdateRequest){
-        if(userUpdateRequest == null){
+    public BaseResponse<UserVO> updateUserInfo(@RequestBody UserUpdateRequest userUpdateRequest) {
+        if (userUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入的参数为空");
         }
         UserVO userVO = userService.updateUserInfo(userUpdateRequest);
@@ -134,8 +133,8 @@ public class UserController {
     @ApiOperation("更新用户密码")
     @LoginCheck
     @PutMapping("/updateUserPassword")
-    public BaseResponse<Boolean> updateUserPassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest){
-        if(userUpdatePasswordRequest == null){
+    public BaseResponse<Boolean> updateUserPassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest) {
+        if (userUpdatePasswordRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "传入的参数为空");
         }
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
@@ -151,8 +150,8 @@ public class UserController {
     @ApiOperation("获取用户关注列表")
     @LoginCheck
     @PostMapping("/listUserFocus")
-    public BaseResponse<Page<UserVO>> listUserFocus(@RequestBody PageRequest pageRequest){
-        if(pageRequest == null){
+    public BaseResponse<Page<UserVO>> listUserFocus(@RequestBody PageRequest pageRequest) {
+        if (pageRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         Page<UserVO> userVOPage = userService.listUserFocus(pageRequest);
@@ -162,8 +161,8 @@ public class UserController {
     @ApiOperation("获取用户粉丝列表")
     @LoginCheck
     @PostMapping("/listUserFollowers")
-    public BaseResponse<Page<UserVO>> listUserFollowers(@RequestBody PageRequest pageRequest){
-        if(pageRequest == null){
+    public BaseResponse<Page<UserVO>> listUserFollowers(@RequestBody PageRequest pageRequest) {
+        if (pageRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         Page<UserVO> userVOPage = userService.listUserFollowers(pageRequest);
@@ -172,8 +171,8 @@ public class UserController {
 
     @ApiOperation("根据条件搜索用户")
     @PostMapping("/listAllUserBySearch")
-    public BaseResponse<Page<UserVO>> listAllUserBySearch(@RequestBody UserSearchRequest userSearchRequest){
-        if(userSearchRequest == null){
+    public BaseResponse<Page<UserVO>> listAllUserBySearch(@RequestBody UserSearchRequest userSearchRequest) {
+        if (userSearchRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
         }
         Page<UserVO> userVOPage = userService.listAllUserBySearch(userSearchRequest);
