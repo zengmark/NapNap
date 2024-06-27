@@ -271,10 +271,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         Long postId = likeRequest.getPostId();
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
+        Post post = postMapper.selectById(postId);
+//        Long userId = post.getUserId();
         // 点赞/取消点赞记录
         boolean isLike = likeService.changeLikeStatus(userId, postId);
         // 如果是点赞
-        Post post = postMapper.selectById(postId);
         if (isLike) {
             post.setLikes(post.getLikes() + 1);
         } else {
@@ -310,7 +311,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 删除 like 表中的点赞记录
         likeService.deleteAllLikeRecord(postId);
         // 删除 comment 表中的评论记录
-        commentService.deleteCommentByPostId(postId, userId);
+        commentService.deleteCommentByPostId(postId);
         return true;
     }
 

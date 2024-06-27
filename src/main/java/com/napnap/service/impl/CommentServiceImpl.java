@@ -167,10 +167,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     @Override
     public boolean deleteCommentById(CommentDeleteRequest commentDeleteRequest) {
         Long commentId = commentDeleteRequest.getCommentId();
-        UserVO userVO = (UserVO)request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        Long userId = userVO.getId();
+//        UserVO userVO = (UserVO)request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+//        Long userId = userVO.getId();
         // 递归删除评论
-        deleteCommentsRecursively(commentId, userId);
+        deleteCommentsRecursively(commentId);
         return true;
     }
 
@@ -181,7 +181,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
      * @return
      */
     @Override
-    public boolean deleteCommentByPostId(Long postId, Long userId) {
+    public boolean deleteCommentByPostId(Long postId) {
         // 先查出该帖子下的第一级的所有评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentId, postId);
@@ -189,7 +189,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
         // 遍历所有第一级评论，递归删除所有子评论
         for (Comment comment : commentList) {
-            deleteCommentsRecursively(comment.getId(), userId);
+            deleteCommentsRecursively(comment.getId());
         }
         return true;
     }
@@ -198,9 +198,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
      * 递归删除子评论
      *
      * @param parentId
-     * @param userId
      */
-    private void deleteCommentsRecursively(Long parentId, Long userId) {
+    private void deleteCommentsRecursively(Long parentId) {
         // 查找所有子评论
         LambdaQueryWrapper<Comment> commentQueryWrapper = new LambdaQueryWrapper<>();
         commentQueryWrapper.eq(Comment::getParentId, parentId);
@@ -209,12 +208,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         List<Comment> comments = commentMapper.selectList(commentQueryWrapper);
         for (Comment comment : comments) {
             // 递归删除子评论的子评论
-            deleteCommentsRecursively(comment.getId(), userId);
+            deleteCommentsRecursively(comment.getId());
         }
 
         // 删除当前评论（逻辑删除）
         commentMapper.deleteById(parentId);
-        // 查找对应的消息表，将消息表中的数据进行删除11
+        Comment comment = commentMapper.selectById(parentId);
+        Long userId = comment.getUid();
+        // 查找对应的消息表，将消息表中的数据进行删除
         messageService.deleteMessage(parentId, MessageConstant.COMMENT, userId);
     }
 

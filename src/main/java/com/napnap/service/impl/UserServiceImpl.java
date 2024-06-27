@@ -67,13 +67,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 生成账号
         String userAccount = null;
         Random random = new Random();
-        while(true){
+        while (true) {
             int accountNumber = 100000 + random.nextInt(900000);
             userAccount = String.valueOf(accountNumber);
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(User::getUserAccount, userAccount);
             User user = userMapper.selectOne(queryWrapper);
-            if(user == null){
+            if (user == null) {
                 break;
             }
         }
@@ -193,7 +193,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         List<Long> idList = followerService.listFocusIds(userId, current, pageSize);
-        if(idList.isEmpty()){
+        if (idList.isEmpty()) {
             return new Page<>();
         }
         // 根据 IdList 查询所有关注用户信息返回
@@ -219,11 +219,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserVO userVO = (UserVO) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         Long userId = userVO.getId();
         List<Long> idList = followerService.listFollowerIds(userId, current, pageSize);
+        if (idList.isEmpty()) {
+            return new Page<>();
+        }
         // 根据 idList 查询所有粉丝用户信息返回
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        if (CollectionUtils.isNotEmpty(idList)) {
-            queryWrapper.in(User::getId, idList);
-        }
+        queryWrapper.in(User::getId, idList);
         Page<User> userPage = userMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
         List<User> userList = userPage.getRecords();
         List<UserVO> userVoList = userList.stream().map(this::getUserVO).collect(Collectors.toList());
@@ -252,7 +253,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public Page<UserVO> listAllUserBySearch(UserSearchRequest userSearchRequest) {
         String searchText = userSearchRequest.getSearchText();
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        if(StringUtils.isNotEmpty(searchText)){
+        if (StringUtils.isNotEmpty(searchText)) {
             queryWrapper.and(wrapper -> wrapper.like(User::getUserName, searchText).or().like(User::getUserAccount, searchText));
         }
         queryWrapper.orderByDesc(User::getCreateTime);

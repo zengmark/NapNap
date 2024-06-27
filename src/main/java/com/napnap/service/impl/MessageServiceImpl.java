@@ -319,6 +319,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
                 Comment parentComment = commentService.getById(parentId);
                 contentBeComment = parentComment.getContent();
             }
+            Post post = getPostByCommentId(comment.getId());
             BeanUtil.copyProperties(userVOInfo, messageCommentVO);
             messageCommentVO.setCommentContent(content);
             messageCommentVO.setCommentParentId(parentId);
@@ -326,9 +327,28 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             messageCommentVO.setCommentParentContent(contentBeComment);
             messageCommentVO.setMessageId(messageMap.get(comment.getId()));
             messageCommentVO.setCreateTime(comment.getCreateTime());
+            messageCommentVO.setPostId(post.getId());
+            messageCommentVO.setTitle(post.getTitle());
             return messageCommentVO;
         }).collect(Collectors.toList());
         return new Page<MessageCommentVO>(commentPage.getCurrent(), commentPage.getSize(), commentPage.getTotal()).setRecords(messageCommentVOList);
+    }
+
+    /**
+     * 根据评论ID获取帖子ID
+     *
+     * @param commentId
+     * @return
+     */
+    private Post getPostByCommentId(Long commentId) {
+        while (true) {
+            Comment comment = commentService.getById(commentId);
+            if (CommentConstant.POST.equals(comment.getCommentType())) {
+                Long parentId = comment.getParentId();
+                return postService.getById(parentId);
+            }
+            commentId = comment.getParentId();
+        }
     }
 
     /**

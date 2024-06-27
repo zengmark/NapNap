@@ -42,5 +42,15 @@ public class MessageCommentVO extends UserVO implements Serializable {
      */
     private Date createTime;
 
+    /**
+     * 帖子ID
+     */
+    private Long postId;
+
+    /**
+     * 帖子标题
+     */
+    private String title;
+
     private static final long serialVersionUID = 1L;
 }

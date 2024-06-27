@@ -21,5 +21,5 @@ public interface CommentService extends IService<Comment> {
 
     boolean deleteCommentById(CommentDeleteRequest commentDeleteRequest);
 
-    boolean deleteCommentByPostId(Long postId, Long userId);
+    boolean deleteCommentByPostId(Long postId);
 }
